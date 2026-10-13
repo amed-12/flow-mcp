@@ -1,2 +1,5 @@
 node_modules
 dist
+
+# A signed-in Google session (npm run session -- export). Never commit it.
+flow-session*.json

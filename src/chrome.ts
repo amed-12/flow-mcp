@@ -168,10 +168,26 @@ async function launchChrome(headless: boolean): Promise<void> {
   throw new Error(`Chrome ${exited ? "exited" : "started"} but its debugging port ${CDP_PORT} never came up.${why ? `\nChrome said:\n${why}` : ""}${root}`);
 }
 
+// Right after Chrome starts, its port answers before the browser is ready for a debugger. On 2026-10-13 (Windows,
+// Chrome 154) a first launch accepted the websocket and then never finished Playwright's handshake, so `npm run login`
+// died after connectOverCDP's 30 s, while the same call a few seconds later connected in 0.2 s. Short tries, repeated.
+async function connect(): Promise<Browser> {
+  let last: unknown;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      return await chromium.connectOverCDP(CDP_URL, { timeout: 10_000 });
+    } catch (err) {
+      last = err;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  throw new Error(`Chrome is running but did not accept the debugging connection on port ${CDP_PORT} (4 tries). Close the Flow Chrome window and try again.\n${last instanceof Error ? last.message.split("\n")[0] : String(last)}`);
+}
+
 // Closes the Flow Chrome (whatever mode it runs in) and waits until its profile is free again.
 export async function closeChrome(): Promise<void> {
   if (!(await cdpUp())) return;
-  const b = browser?.isConnected() ? browser : await chromium.connectOverCDP(CDP_URL);
+  const b = browser?.isConnected() ? browser : await connect();
   const session = await b.newBrowserCDPSession();
   await session.send("Browser.close").catch(() => {});
   browser = null;
@@ -185,7 +201,7 @@ export async function closeChrome(): Promise<void> {
 export async function getBrowser(headless = HEADLESS): Promise<Browser> {
   if (browser?.isConnected()) return browser;
   if (!(await cdpUp())) await launchChrome(headless);
-  browser = await chromium.connectOverCDP(CDP_URL);
+  browser = await connect();
   return browser;
 }
 
