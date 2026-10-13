@@ -106,6 +106,18 @@ server.registerTool(
 );
 
 server.registerTool(
+  "flow_open_project",
+  {
+    title: "Open a Flow project",
+    description:
+      "Open a Flow project by its link (https://flow.google.com/project/<id>) when flow_status says no project is open. Needed when Flow runs with no window (FLOW_MCP_HEADLESS), where nobody can click a project open. The project is remembered and opened again on the next start.",
+    inputSchema: shapes.open_project,
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  },
+  (args) => reply(patient("flow_open_project", use((c) => c.open_project(args)))),
+);
+
+server.registerTool(
   "flow_generate",
   {
     title: "Queue Flow generations",

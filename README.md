@@ -21,15 +21,16 @@ New here? [GETTING-STARTED.md](GETTING-STARTED.md) takes you from nothing to you
 
 | | |
 |---|---|
-| **macOS, Windows 10/11 or Ubuntu Desktop** | Developed and tested on macOS; run end to end on Windows 11 (2026-10-13). Ubuntu is supported in the code (Chrome, espeak-ng voices, the Trash, ZIPs, the panel launcher) but has not been run on a real machine yet, so please report anything that breaks. Ubuntu *Server* cannot work: the Chrome window needs a desktop |
+| **macOS, Windows 10/11 or Ubuntu Desktop** | Developed and tested on macOS; run end to end on Windows 11 (2026-10-13). Ubuntu is supported in the code (Chrome, espeak-ng voices, the Trash, ZIPs, the panel launcher) but has not been run on a real machine yet, so please report anything that breaks. A server with no desktop runs Chrome [headless](#headless-no-window-for-agents-on-a-server) |
 | **Node.js 22 or newer** | `node --version`. Ubuntu's own package is older: install 22 from NodeSource or with nvm |
 | **Google Chrome** | Any recent version. On Ubuntu, Google's `.deb`, not the Chromium snap (snaps cannot use the hidden `~/.flow-mcp` folder) |
 | **A Google account** | Free. Flow gives every account 50 credits a day; a paid Google AI plan adds more and unlocks 1080p downloads. Developed on a Pro plan |
 | **FFmpeg** *(optional)* | Mac: `brew install ffmpeg` · Windows: `winget install Gyan.FFmpeg` · Ubuntu: `sudo apt install ffmpeg`. Needed only to join clips, mix music or record narration |
 | **A Google AI Studio key** *(optional, free)* | Only for the Google narration voices. See below |
 
-A display must stay awake: the Chrome window is really being driven, so the machine cannot be
-headless or asleep mid-run.
+The machine must stay awake while it works: a real Chrome is being driven. By default you can watch it in its own
+window; for an agent on a server (Hermes, Claude Code over SSH) it can run with no window at all, see
+[Headless](#headless-no-window-for-agents-on-a-server).
 
 ---
 
@@ -85,11 +86,14 @@ be written without writing it, and `npm run connect -- print` prints the entry f
 | Cursor | `cursor` | `~/.cursor/mcp.json` |
 | Claude Code | `claude-code` | runs `claude mcp add --scope user flow ...` |
 | Claude Desktop | `claude-desktop` | `claude_desktop_config.json` (Mac and Windows; there is no Linux app) |
+| Hermes | `hermes` | `~/.hermes/config.yaml` (or `$HERMES_HOME`), only `mcp_servers.flow` |
 | VS Code | `vscode` | prints the `code --add-mcp` command |
 
 Every entry uses absolute paths (this Node and this folder), because apps started from the desktop often cannot
 find `node` on their PATH. Other servers in those files are left alone, the file is copied to
-`<file>.bak-flowmcp` before its first change, and `FLOW_MCP_OUTPUT`, if set, is written into the entry too.
+`<file>.bak-flowmcp` before its first change, and any `FLOW_MCP_OUTPUT`, `FLOW_MCP_HOME`, `FLOW_MCP_HEADLESS`,
+`FLOW_MCP_PROJECT`, `FLOW_MCP_CHROME` or `FLOW_MCP_CHROME_ARGS` set in your shell is written into the entry too.
+`--headless` adds `FLOW_MCP_HEADLESS=1`: `npm run connect -- --headless hermes claude-code`.
 
 **By hand**, for any other MCP app (Cursor, VS Code, Windsurf and the rest take the same thing): the command
 is `node` and the one argument is the absolute path to `dist/index.js`. In JSON settings:
@@ -124,6 +128,86 @@ started drives Flow, and the others pass their requests to it.
 
 Restart the app, then ask it: *"check my Flow session"*. You should get your plan and credit balance
 back. Everything after that is plain English; you never type tool names.
+
+---
+
+## Headless: no window, for agents on a server
+
+Set `FLOW_MCP_HEADLESS=1` and Chrome runs with no window (Chrome's own headless mode, `--headless=new`). That is what
+an agent on a server needs (Hermes, or Claude Code over SSH), and it also keeps a desktop free of the Flow window.
+Nothing about the browser is disguised: it says it is headless Chrome, and it drives Flow at the same human pace.
+
+> Not run against live Flow yet (built 2026-10-13 in a sandbox that cannot reach flow.google.com; everything around
+> Flow was tested there). Try a free still first (*"draw one test image"*) and please report how it goes.
+
+**1. Connect the agent with headless on**
+
+```bash
+npm run connect -- --headless hermes        # Hermes: writes mcp_servers.flow in ~/.hermes/config.yaml
+npm run connect -- --headless claude-code   # Claude Code CLI: claude mcp add --scope user -e FLOW_MCP_HEADLESS=1 ...
+```
+
+In Hermes, type `/reload-mcp` (or start a new chat). By hand, the Hermes entry is:
+
+```yaml
+mcp_servers:
+  flow:
+    command: "/usr/bin/node"                       # the full path of node 22+
+    args: ["/home/you/flow-mcp/dist/index.js"]
+    env:
+      FLOW_MCP_HEADLESS: "1"
+    connect_timeout: 60
+```
+
+The `env` part matters for Hermes: it starts MCP servers with only a few safe variables (PATH, HOME, ...), so
+anything flow-mcp needs has to be listed there. `npm run connect` does that for you.
+
+**2. Sign in, once.** Signing in is always done by a person, in a window. Pick whichever fits:
+
+| Where flow-mcp runs | How to sign in |
+|---|---|
+| A computer with a screen | `npm run login -- --close`: a window opens, you sign in and open a project, it closes again |
+| A server you reach over SSH | `ssh -X you@server`, then `cd flow-mcp && npm run login -- --close`. The window shows on your own screen (needs `xauth` on the server, and an X server on your computer: built into Linux desktops, XQuartz on a Mac) |
+| A server, without display forwarding | Sign in on a computer with a screen and carry the session over (below) |
+
+Carrying the session over: on the computer where you signed in (`npm run login`), in the flow-mcp folder,
+
+```bash
+npm run session -- export                       # writes flow-session.json: only Google's cookies, readable by you alone
+scp flow-session.json you@server:~/
+```
+
+then on the server, in the flow-mcp folder:
+
+```bash
+npm run session -- import ~/flow-session.json   # loads them into flow-mcp's own Chrome profile and checks Flow
+rm ~/flow-session.json                          # and delete the copy on the other computer too
+```
+
+That file *is* your Google sign-in while it exists: never paste it into a chat or hand it to an AI agent (it is
+deliberately not an MCP tool). Google may tie a session to the computer it was made on; if the import reports that
+Flow still shows the signed-out page, sign in on the server itself with `ssh -X`.
+
+**3. The project.** With no window nobody can click a project open, so flow-mcp remembers the last project it saw
+(also from `login` and `session export`) and starts there. To switch, give the agent a project link
+(*"open https://flow.google.com/project/..."*): it calls `flow_open_project`. `FLOW_MCP_PROJECT=<link>` pins one.
+
+**Why not "Sign in with Google" (OAuth)?** Flow has no OAuth API. It is a website, and it only accepts Google's own
+browser sign-in cookies; an OAuth token from an app cannot be turned into those. Google's sign-in page is meant for
+a person at a browser (it can refuse a headless one), and this program never types your password. So a person signs
+in once, in a real window, and the session is kept (or carried over).
+
+**Good to know**
+
+- Chrome refuses to run as **root**. Run flow-mcp as a normal user; or, on a machine that only ever opens Flow,
+  `FLOW_MCP_CHROME_ARGS=--no-sandbox` (that turns Chrome's own sandbox off, which is your call).
+- Something only you may answer (Flow's one-time *Rights to use this image* agreement) stops the job with a
+  message: run `npm run login`, answer it in the window, close it.
+- `flow_status` shows `"browser": "headless"` or `"window"`. `npm run login` reopens a headless Chrome in a window
+  (it asks first, or pass `--yes`) and checks first that this machine can show one.
+- Chrome's own messages go to `~/.flow-mcp/chrome.log`, and a Chrome that fails to start quotes them.
+- Prefer the regular window on a server? Give it a virtual screen: `xvfb-run -a npm run studio` keeps a windowed
+  Chrome and the panel running, and agents started afterwards pass their requests to it.
 
 ---
 
@@ -193,7 +277,8 @@ agree on what is running. That API listens on 127.0.0.1 only and needs a per-run
 
 | Tool | Purpose |
 |---|---|
-| `flow_status` | Session state (signed in, project open, plan, credits left), queue, pacing, prompt playbook |
+| `flow_status` | Session state (signed in, project open, plan, credits left, window or headless), queue, pacing, prompt playbook |
+| `flow_open_project` | Open a project by its link (or id), and remember it for the next start. Needed in headless mode, where nobody can click one open |
 | `flow_generate` | Queue scenes: prompt, image or video, model, aspect, duration, resolution, variants, first/last frame, reference images, `max_credits` cap |
 | `flow_wait` | Wait for jobs, or for the task id of a slow call; returns file paths and results. Answers within about 40 s, so call again until `finished` is true |
 | `flow_cancel` | Cancel a job that has not started |
@@ -238,14 +323,17 @@ key → Save key**. It's checked with Google before it's saved, and stored only 
   `max_credits` (default 25).
 - Environment variables: `GEMINI_API_KEY`, `FLOW_MCP_PORT` (8787), `FLOW_MCP_OUTPUT`,
   `FLOW_MCP_HOME`, `FLOW_MCP_CDP_PORT` (9333), `FLOW_MCP_CHROME`, `FLOW_MCP_PAUSE_MIN_S`,
-  `FLOW_MCP_PAUSE_MAX_S`.
+  `FLOW_MCP_PAUSE_MAX_S`, `FLOW_MCP_HEADLESS` (`1` = no window), `FLOW_MCP_PROJECT` (project link to start on),
+  `FLOW_MCP_CHROME_ARGS` (extra Chrome flags, space-separated).
 
 ## If something goes wrong
 
 | Symptom | Cause |
 |---|---|
 | Mac: the server will not start, `EPERM: operation not permitted` | The folder is in a macOS-protected location. Move it out of `~/Desktop`, `~/Documents` or `~/Downloads` and update the path in your Claude config |
-| *"Not signed in"* or *"no project open"* | Run `npm run login`, sign in, open a Flow project, leave the window open |
+| *"Not signed in"* or *"no project open"* | Run `npm run login`, sign in, open a Flow project, leave the window open. Headless: see [Headless](#headless-no-window-for-agents-on-a-server); for a project, give the assistant its link |
+| *"There is no screen here for a Chrome window"* | A server, or an app that hides the display from its tools: connect with `npm run connect -- --headless <app>` |
+| *"Chrome refuses to run as root"* | Run it as a normal user, or set `FLOW_MCP_CHROME_ARGS=--no-sandbox` (see Headless) |
 | A clip generated but no file arrived | The media is still in Flow. `flow_download` pulls it back for nothing. Never re-generate and pay twice |
 | Everything times out | The Chrome window was closed, or the machine slept. Reopen it with `npm run login` |
 

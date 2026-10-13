@@ -2,10 +2,10 @@ import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { z } from "zod";
 import { assemble, localVoices, speakLocally } from "./assemble.js";
-import { OUTPUT_ROOT } from "./chrome.js";
+import { OUTPUT_ROOT, chromeMode } from "./chrome.js";
 import { GEMINI_VOICES, checkGeminiKey, geminiKey, saveGeminiKey, speakWithGemini } from "./gemini.js";
 import { extractLastFrame } from "./chain.js";
-import { characterLook, createCharacter, downloadAsset, trashAsset, editCharacter, getFlowState, listAssets, listCharacters, rememberCharacter, runAgentBatch, runContinue, runEdit, runGeneration } from "./flow.js";
+import { characterLook, createCharacter, downloadAsset, trashAsset, editCharacter, getFlowState, listAssets, openProject, listCharacters, rememberCharacter, runAgentBatch, runContinue, runEdit, runGeneration } from "./flow.js";
 import { JobQueue, type Job } from "./queue.js";
 import { BIN, COMPUTER, IS_MAC, IS_WIN, moveToBin } from "./platform.js";
 import { TECHNIQUES, techniqueById } from "./techniques.js";
@@ -147,6 +147,12 @@ export const shapes = {
       .optional()
       .describe("Skip the guard that refuses to run when Flow already holds a fresh-looking continuation of this clip. Only pass it when you have checked the grid and genuinely want another paid take."),
   },
+  open_project: {
+    link: z
+      .string()
+      .min(1)
+      .describe("The project's address as the user copied it from flow.google.com (https://flow.google.com/project/<id>), or just the id."),
+  },
   trash: { name: z.string().min(1).describe("Exact title of the item to move to Flow's Trash, as listed by flow_assets.") },
   set_key: { key: z.string().min(1).max(200) },
   check_key: {},
@@ -210,6 +216,7 @@ export const jobView = ({ id, status, params, files, attempts, credits, progress
 // One implementation runs in whichever process owns the Flow tab; the other process talks to it over HTTP (remote.ts).
 export interface Core {
   status(a: Args<"status">): Promise<unknown>;
+  open_project(a: Args<"open_project">): Promise<unknown>;
   generate(a: Args<"generate">): Promise<unknown>;
   wait(a: Args<"wait">): Promise<unknown>;
   cancel(a: Args<"cancel">): Promise<unknown>;
@@ -275,7 +282,14 @@ export class LocalCore implements Core {
 
   async status({ detailed }: Args<"status">) {
     const flow = await getFlowState(detailed && !this.queue.busy);
-    return { flow, pacing: this.queue.pausedReason, output_root: OUTPUT_ROOT, jobs: this.queue.list().map(jobView) };
+    // "headless": Chrome runs with no window (FLOW_MCP_HEADLESS), so anything a person must answer needs npm run login.
+    const browser = (await chromeMode()) ?? "not running";
+    return { flow, browser, pacing: this.queue.pausedReason, output_root: OUTPUT_ROOT, jobs: this.queue.list().map(jobView) };
+  }
+
+  async open_project({ link }: Args<"open_project">) {
+    if (this.queue.busy) throw new Error(BUSY);
+    return { flow: await openProject(link) };
   }
 
   async generate({ project, scenes }: Args<"generate">) {

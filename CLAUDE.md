@@ -384,3 +384,41 @@ The preview tool could not read the project while it lived in ~/Desktop; check t
   was exercised on Windows). systemDownloadsDir() asks `xdg-user-dir DOWNLOAD` (~/Unduhan on an Indonesian desktop).
   Computer voices: espeak-ng (`--voices=en` to list; `-w out.wav -f line.txt`, text via a file like Windows).
   `Flow Studio.sh` launcher (loads nvm when started from the desktop). package.json engines node >=22.
+- HEADLESS (2026-10-13, built in a cloud sandbox where flow.google.com is blocked by policy, so NOT yet run against
+  live Flow - try a free still first). FLOW_MCP_HEADLESS=1 launches `--headless=new --window-size=1600,1000` (Flow's
+  nav slides off-screen at ~1038 px). Nothing is disguised: the user agent keeps "HeadlessChrome" (no-evasion rule);
+  whether Flow's invisible reCAPTCHA treats headless differently is UNKNOWN. New headless reports plain
+  "Chrome/141..." as `Browser` in /json/version - only `User-Agent` says HeadlessChrome - so chromeMode() checks both
+  (verified with Chromium 141). flow_status returns `browser: headless | window | not running`. Chrome's stderr goes
+  to HOME/chrome.log and a failed launch quotes its tail: as root Chrome exits at once with "Running as root without
+  --no-sandbox" (seen here); FLOW_MCP_CHROME_ARGS takes extra flags and --no-sandbox is never added by itself.
+  A window on Linux with no DISPLAY/WAYLAND_DISPLAY now fails up front with a message instead of "port never came up".
+- NO OAUTH SIGN-IN, by design: Flow has no OAuth API; it runs on Google's web session cookies, and turning an OAuth
+  token into those would mean posing as Chrome's own sign-in client - not done. Sign-in stays manual (`npm run login`,
+  a window). For a server: `ssh -X` + `npm run login -- --close`, or `npm run session -- export` on a signed-in
+  machine and `import <file>` on the server. session.ts carries only .google.com / labs.google cookies plus the last
+  project, writes 0600, clears old Google cookies before import, then loads Flow and reports if it still shows /about
+  (Google may bind a session to its device). It is a CLI for the person ONLY - never an MCP tool, like set_key: the
+  file is the user's Google sign-in. Verified offline with a fake SID cookie: export filter, 0600, import, refusal path.
+- login.ts now: refuses (before closing anything) when no window can be shown - otherwise it killed a server's only
+  Chrome; reopens a running HEADLESS Chrome in a window (asks, or --yes) via CDP Browser.close; survives Flow not
+  loading; in a terminal (or --wait/--close) waits for a /project/ URL by reading tab URLs, never getFlowPage (that
+  opens a second tab while the user is on accounts.google.com); --close (default when FLOW_MCP_HEADLESS is set) shuts
+  the window afterwards so the next MCP call starts headless. Checked under xvfb-run.
+- PROJECT WITHOUT A WINDOW: flow_open_project(link | uuid) = page.goto, no selectors. getFlowState remembers every
+  /project/<uuid> it sees in HOME/last-project; a fresh Chrome (and a new Flow tab) starts there; FLOW_MCP_PROJECT
+  pins one. projectUrl() trims /edit/ and /scene/ views and keeps a labs.google/fx base. The "no project" hint tells
+  the model to ask the user for a link; the playbook's "relay the hint and stop" rule has that one exception.
+- HERMES (Nous Research): ~/.hermes/config.yaml (or $HERMES_HOME), `mcp_servers.<name>` with command/args/env,
+  connect_timeout (default 60 s), timeout (default 300 s per call). It hands stdio servers ONLY PATH, HOME, USER,
+  LANG, LC_ALL, TERM, SHELL, TMPDIR, XDG_* and the Windows basics, plus the entry's env (tools/mcp_tool_config.py
+  _build_safe_env, read 2026-10-13). So FLOW_MCP_* must be in the entry, a window is impossible without DISPLAY, and
+  without DBUS_SESSION_BUS_ADDRESS a desktop Linux Chrome may not reach the keyring and read its profile as signed
+  out - connect.ts passes those through on Linux (DISPLAY only when not headless). hermesYaml() replaces only
+  `flow:` under a block-style top-level mcp_servers (refuses the inline `{}` form); output parsed with PyYAML.
+  `hermes mcp add` exists but has no --env, hence the file edit. `npm run connect -- --headless` sets
+  FLOW_MCP_HEADLESS=1 in every app's entry.
+- OFFLINE TESTING of URL-level logic: attach a second Playwright client to the test Chrome and
+  `context.route(/flow\.google\.com/, fulfill stand-in HTML)`; navigations made by flow-mcp's own connection are
+  served too. A 302 from route.fulfill was NOT followed through the route (hit the network); a stand-in that does
+  `location.replace("/about")` was. Use a scratch FLOW_MCP_HOME, FLOW_MCP_CDP_PORT and FLOW_MCP_PORT as always.
