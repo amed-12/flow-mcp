@@ -1,7 +1,7 @@
 // Guidance handed to the calling model through flow_status, so it plans scenes that Flow can actually run.
 export const PLAYBOOK = {
   workflow: [
-    "Call flow_status first. If it returns a hint, relay it to the user and stop.",
+    "Call flow_status first. If it returns a hint, relay it to the user and stop. The one exception is 'no project is open': ask the user for a Flow project link and pass it to flow_open_project.",
     "Plan the whole piece as scenes of one shot each, then send them in ONE flow_generate call so file numbering and chaining work.",
     "Tell the user the expected credit total before queueing anything that costs credits.",
     "Call flow_wait repeatedly until finished is true; scenes run one at a time with 25-70 s pauses.",
@@ -32,7 +32,7 @@ export const PLAYBOOK = {
 // The same rules as MCP server instructions, which every MCP app (Codex, Antigravity, Gemini CLI, Cursor, Claude) hands
 // its model when it connects - before the model has called flow_status even once, and whether or not it ever does.
 export const INSTRUCTIONS = [
-  "flow-mcp drives Google Flow (AI video and image generation) in a Chrome window on the user's own computer and spends the user's Google AI credits.",
+  "flow-mcp drives Google Flow (AI video and image generation) in a dedicated Chrome on the user's own machine (in a window, or headless with FLOW_MCP_HEADLESS=1) and spends the user's Google AI credits.",
   ...PLAYBOOK.workflow,
   `Stills with Nano Banana 2: ${PLAYBOOK.models["Nano Banana 2"]}`,
   "flow_status also returns the full prompt playbook: models and their credit prices, prompt order, and the continuity tools.",

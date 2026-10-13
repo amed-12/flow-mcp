@@ -160,6 +160,10 @@ npm run login
 A separate Chrome window opens. Sign in to Google yourself, open a Flow project (or create one), and leave
 the window open. The sign-in is remembered.
 
+Running it for an agent on a server with no screen (Hermes, Claude Code over SSH)? See **Headless** in the
+[README](README.md#headless-no-window-for-agents-on-a-server): Chrome runs with no window, and you sign in once
+over `ssh -X` or carry your sign-in over from another computer.
+
 ### B4. Connect the Claude app (Chat tab)
 
 Skip this if you'll only use Flow Studio.

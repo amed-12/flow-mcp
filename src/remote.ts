@@ -16,6 +16,7 @@ async function call(method: string, args: unknown): Promise<unknown> {
 
 export class RemoteCore implements Core {
   status = (a: unknown) => call("status", a);
+  open_project = (a: unknown) => call("open_project", a);
   generate = (a: unknown) => call("generate", a);
   cancel = (a: unknown) => call("cancel", a);
   retry = (a: unknown) => call("retry", a);

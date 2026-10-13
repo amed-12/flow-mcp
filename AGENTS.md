@@ -7,7 +7,9 @@ workaround exists, what has been verified on which system, and how to test witho
 The essentials:
 - Build with `npm run build` (TypeScript to `dist/`). There is no unit test suite; `scripts/e2e.mjs` drives the MCP
   server end to end against the real Flow tab.
-- Every difference between macOS, Windows and Linux lives in `src/platform.ts`.
+- Every difference between macOS, Windows and Linux lives in `src/platform.ts`. Chrome's launch (window or
+  headless, FLOW_MCP_HEADLESS) lives in `src/chrome.ts`; signing in is always done by a person (`npm run login`,
+  or `npm run session` to carry a sign-in to a server). Never automate it and never handle the session file.
 - Generating video spends the user's real Google AI credits. Test with stills (Nano Banana, 0 credits), and move test
   items to Flow's Trash afterwards.
 - To test new code beside a running copy, use a scratch `FLOW_MCP_HOME` and another `FLOW_MCP_PORT`; reusing the real

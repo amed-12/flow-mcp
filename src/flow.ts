@@ -2,7 +2,7 @@ import { closeSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, 
 import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 import type { Locator, Page } from "playwright-core";
-import { HOME_DIR, OUTPUT_ROOT, getFlowPage } from "./chrome.js";
+import { HOME_DIR, OUTPUT_ROOT, chromeMode, getFlowPage, projectUrl, rememberProject } from "./chrome.js";
 import type { Job } from "./queue.js";
 import { extractZip, moveFile, systemDownloadsDir } from "./platform.js";
 
@@ -30,12 +30,32 @@ export async function getFlowState(detailed = false): Promise<FlowState> {
   const signedIn = !/\/about|accounts\.google\.com/.test(url);
   const inProject = /\/project\//.test(url);
   const state: FlowState = { url, signedIn, inProject };
-  if (!signedIn) state.hint = "Not signed in. Run `npm run login` and sign in to Google in the Flow Chrome window.";
-  else if (!inProject) state.hint = "Signed in, but no project is open. Open or create a project in the Flow Chrome window.";
-  else if (detailed) {
+  if (inProject) rememberProject(url);
+  if (!signedIn) {
+    state.hint =
+      "Not signed in. Run `npm run login` in the flow-mcp folder and sign in to Google in the window it opens (the program never types your password). On a server with no screen, sign in on another computer and bring the session over with `npm run session -- export` there and `npm run session -- import <file>` here.";
+  } else if (!inProject) {
+    state.hint =
+      "Signed in, but no project is open. Ask the user for a Flow project link (open the project at flow.google.com in any browser and copy the address) and pass it to flow_open_project, or open one in the Flow Chrome window.";
+  } else if (detailed) {
     state.plan = await page.getByRole("button", { name: "Account details" }).innerText().then((t) => t.trim().split("\n")[0], () => undefined);
     state.credits_remaining = await readCredits(page).catch(() => undefined);
     state.composer = await settingsTrigger(page).innerText().then((t) => t.replace(/\s+/g, " ").trim(), () => undefined);
+  }
+  return state;
+}
+
+// Opens a project by its link. With no window this is the only way into a project, so it is remembered (getFlowState)
+// and a fresh Chrome starts there next time.
+export async function openProject(link: string): Promise<FlowState> {
+  const url = projectUrl(link);
+  if (!url) throw new Error("That is not a Flow project link. It looks like https://flow.google.com/project/<id>; the id alone works too.");
+  const page = await getFlowPage();
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await pause(page, 3000);
+  const state = await getFlowState(false);
+  if (state.signedIn && !state.inProject) {
+    state.hint = `Flow did not open that project (it went to ${state.url}). Check that the link belongs to the Google account signed in here.`;
   }
   return state;
 }
@@ -46,9 +66,12 @@ export async function getFlowState(detailed = false): Promise<FlowState> {
 async function failOnRightsDialog(page: Page): Promise<void> {
   const dialog = page.getByRole("dialog").filter({ hasText: "Rights to use this image" });
   if (await dialog.isVisible().catch(() => false)) {
-    throw new Error(
-      'Flow is asking you to confirm "Rights to use this image" (shown once, on the first upload). Read it in the Flow Chrome window and click I agree or Cancel there, then run this again. Nothing was generated.',
-    );
+    // With no window nobody can read it here. The same profile opened in a window shows it on the next upload.
+    const where =
+      (await chromeMode()) === "headless"
+        ? "Flow is running with no window here, so: run `npm run login` in the flow-mcp folder (same profile, in a window), add any picture to the project there to bring the dialog up, answer it, close the window"
+        : "Read it in the Flow Chrome window and click I agree or Cancel there";
+    throw new Error(`Flow is asking you to confirm "Rights to use this image" (shown once, on the first upload). ${where}, then run this again. Nothing was generated.`);
   }
 }
 
