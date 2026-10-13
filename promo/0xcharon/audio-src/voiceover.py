@@ -14,7 +14,7 @@ LINES = [
     (14.3, "Track P.N.L., win rate and open trades, on one console.", 1.08),
     (19.2, "Pause new entries in one tap, or hit Panic Close.", 1.08),
     (22.4, "Start in paper mode, without risking a single SOL.", 1.18),
-    (25.6, "Zero X Charon: autonomous degen trading, executed with precision.", 1.3),
+    (25.8, "Autonomous degen trading, executed with precision.", 1.08),
 ]
 for i, (at, text, speed) in enumerate(LINES, 1):
     s, sr = k.create(text, voice="am_michael", speed=speed, lang="en-us")
