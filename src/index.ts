@@ -3,16 +3,22 @@ import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { LocalCore, shapes, type Core } from "./core.js";
-import { PLAYBOOK } from "./playbook.js";
+import { INSTRUCTIONS, PLAYBOOK } from "./playbook.js";
 import { RemoteCore } from "./remote.js";
 import { PORT, startServer } from "./server.js";
 
+// Which process drives Flow is settled in the background. Finding out can take half a minute when the port's owner is
+// busy, and MCP apps give a server far less to start: Codex waits 10 s. So the stdio link comes up at once, and each
+// tool call waits for the answer instead.
 const local = new LocalCore();
-const role = await startServer(local);
-const core: Core = role === "client" ? new RemoteCore() : local;
-const studio = role === "none" ? undefined : `http://127.0.0.1:${PORT}`;
+const ready = startServer(local).then((role) => ({
+  core: (role === "client" ? new RemoteCore() : local) as Core,
+  studio: role === "none" ? undefined : `http://127.0.0.1:${PORT}`,
+}));
+ready.catch((err) => console.error("flow-mcp: could not start the Studio server:", err));
+const use = <T>(call: (core: Core) => Promise<T>): Promise<T> => ready.then(({ core }) => call(core));
 
-const server = new McpServer({ name: "flow-mcp", version: "0.2.0" });
+const server = new McpServer({ name: "flow-mcp", version: "0.2.0" }, { instructions: INSTRUCTIONS });
 
 type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
 const reply = async (work: Promise<unknown>, extra: object = {}): Promise<ToolResult> => {
@@ -80,7 +86,7 @@ async function waitFor({ job_ids, timeout_seconds }: { job_ids?: string[]; timeo
   const tasksFinished = done.every((t) => t.status !== "running");
   if (mine.length && !jobs?.length) return { finished: tasksFinished, tasks: done };
   const left = Math.max(5, Math.floor((deadline - Date.now()) / 1000));
-  const queued = (await core.wait({ job_ids: jobs, timeout_seconds: left })) as { finished: boolean };
+  const queued = (await use((c) => c.wait({ job_ids: jobs, timeout_seconds: left }))) as { finished: boolean };
   return mine.length ? { ...queued, finished: queued.finished && tasksFinished, tasks: done } : queued;
 }
 
@@ -93,7 +99,10 @@ server.registerTool(
     inputSchema: shapes.status,
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  (args) => reply(core.status(args), { studio, playbook: PLAYBOOK, ...(tasks.size ? { slow_calls: [...tasks.values()].map(({ result, ...t }) => t) } : {}) }),
+  async (args) => {
+    const studio = await ready.then((r) => r.studio, () => undefined);
+    return reply(use((c) => c.status(args)), { studio, playbook: PLAYBOOK, ...(tasks.size ? { slow_calls: [...tasks.values()].map(({ result, ...t }) => t) } : {}) });
+  },
 );
 
 server.registerTool(
@@ -105,7 +114,7 @@ server.registerTool(
     inputSchema: shapes.generate,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(core.generate(args)),
+  (args) => reply(use((c) => c.generate(args))),
 );
 
 server.registerTool(
@@ -128,7 +137,7 @@ server.registerTool(
     inputSchema: shapes.cancel,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   },
-  (args) => reply(core.cancel(args)),
+  (args) => reply(use((c) => c.cancel(args))),
 );
 
 server.registerTool(
@@ -139,7 +148,7 @@ server.registerTool(
     inputSchema: shapes.retry,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(core.retry(args)),
+  (args) => reply(use((c) => c.retry(args))),
 );
 
 server.registerTool(
@@ -150,7 +159,7 @@ server.registerTool(
     inputSchema: shapes.assets,
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  (args) => reply(patient("flow_assets", core.assets(args))),
+  (args) => reply(patient("flow_assets", use((c) => c.assets(args)))),
 );
 
 server.registerTool(
@@ -162,7 +171,7 @@ server.registerTool(
     inputSchema: shapes.download,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
-  (args) => reply(patient("flow_download", core.download(args))),
+  (args) => reply(patient("flow_download", use((c) => c.download(args)))),
 );
 
 server.registerTool(
@@ -174,7 +183,7 @@ server.registerTool(
     inputSchema: shapes.agent,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(core.agent(args)),
+  (args) => reply(use((c) => c.agent(args))),
 );
 
 server.registerTool(
@@ -186,7 +195,7 @@ server.registerTool(
     inputSchema: shapes.edit,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(core.edit(args)),
+  (args) => reply(use((c) => c.edit(args))),
 );
 
 server.registerTool(
@@ -198,7 +207,7 @@ server.registerTool(
     inputSchema: shapes.continue_shot,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(patient("flow_continue", core.continue_shot(args))),
+  (args) => reply(patient("flow_continue", use((c) => c.continue_shot(args)))),
 );
 
 server.registerTool(
@@ -210,7 +219,7 @@ server.registerTool(
     inputSchema: shapes.trash,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(patient("flow_trash", core.trash(args))),
+  (args) => reply(patient("flow_trash", use((c) => c.trash(args)))),
 );
 
 server.registerTool(
@@ -222,7 +231,7 @@ server.registerTool(
     inputSchema: shapes.character,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(patient("flow_character", core.character(args))),
+  (args) => reply(patient("flow_character", use((c) => c.character(args)))),
 );
 
 server.registerTool(
@@ -234,7 +243,7 @@ server.registerTool(
     inputSchema: shapes.character_edit,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(patient("flow_character_edit", core.character_edit(args))),
+  (args) => reply(patient("flow_character_edit", use((c) => c.character_edit(args)))),
 );
 
 server.registerTool(
@@ -245,7 +254,7 @@ server.registerTool(
     inputSchema: shapes.characters,
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  () => reply(patient("flow_characters", core.characters())),
+  () => reply(patient("flow_characters", use((c) => c.characters()))),
 );
 
 server.registerTool(
@@ -257,7 +266,7 @@ server.registerTool(
     inputSchema: shapes.techniques,
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
-  (args) => reply(core.techniques(args)),
+  (args) => reply(use((c) => c.techniques(args))),
 );
 
 server.registerTool(
@@ -269,7 +278,7 @@ server.registerTool(
     inputSchema: shapes.narrate,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
-  (args) => reply(patient("flow_narrate", core.narrate(args))),
+  (args) => reply(patient("flow_narrate", use((c) => c.narrate(args)))),
 );
 
 server.registerTool(
@@ -280,7 +289,7 @@ server.registerTool(
     inputSchema: shapes.voices,
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
-  () => reply(core.voices()),
+  () => reply(use((c) => c.voices())),
 );
 
 server.registerTool(
@@ -292,7 +301,7 @@ server.registerTool(
     inputSchema: shapes.assemble,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
-  (args) => reply(patient("flow_assemble", core.assemble(args))),
+  (args) => reply(patient("flow_assemble", use((c) => c.assemble(args)))),
 );
 
 await server.connect(new StdioServerTransport());

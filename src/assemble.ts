@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } f
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
 
-import { FFMPEG_HINT, IS_WIN, powershell, psQuote } from "./platform.js";
+import { FFMPEG_HINT, IS_MAC, IS_WIN, powershell, psQuote } from "./platform.js";
 
 const run = promisify(execFile);
 const FFMPEG = process.env.FLOW_MCP_FFMPEG ?? "ffmpeg";
@@ -71,10 +71,24 @@ export async function extractAudio(video: string, target: string): Promise<{ out
 }
 
 const SAY = process.env.FLOW_MCP_SAY ?? "say";
+const ESPEAK = process.env.FLOW_MCP_ESPEAK ?? "espeak-ng";
+
+// Linux has no system voice API, but Ubuntu's speech stack is espeak-ng: robotic next to Google's voices, yet free,
+// offline and any length. `espeak-ng --voices=en` prints "Pty Language Age/Gender VoiceName File ..." rows.
+async function linuxVoices(): Promise<{ name: string; description: string }[]> {
+  const { stdout } = await run(ESPEAK, ["--voices=en"]).catch(() => ({ stdout: "" }));
+  return stdout
+    .split("\n")
+    .slice(1)
+    .map((line) => line.trim().split(/\s+/))
+    .filter(([, lang, , name]) => /^en/i.test(lang ?? "") && name)
+    .map(([, lang, , name]) => ({ name: lang, description: `${name.replace(/_/g, " ")} · Linux (espeak-ng), free` }));
+}
 
 // The voices this computer has installed. On a Mac that is `say` (Premium voices appear as soon as the user downloads
 // them in System Settings); on Windows it is the built-in speech engine, the voices under Settings > Time & language >
-// Speech. The Windows branch is written to the documented System.Speech API but has not been run on a real PC yet.
+// Speech; on Linux it is espeak-ng. The Windows branch is written to the documented System.Speech API but has not been
+// run on a real PC yet, and the Linux branch has not been run on a real Ubuntu yet.
 export async function localVoices(): Promise<{ name: string; description: string }[]> {
   if (IS_WIN) {
     try {
@@ -90,6 +104,7 @@ export async function localVoices(): Promise<{ name: string; description: string
       return [];
     }
   }
+  if (!IS_MAC) return linuxVoices();
   const { stdout } = await run(SAY, ["-v", "?"], { maxBuffer: 4 * 1024 * 1024 }).catch(() => ({ stdout: "" }));
   return stdout
     .split("\n")
@@ -102,21 +117,27 @@ export async function localVoices(): Promise<{ name: string; description: string
 // Speaks a line with this computer's own voice. Free and instant, but only as good as the installed voice.
 export async function speakLocally(text: string, voice: string, target: string): Promise<{ output: string; duration: number }> {
   const stem = target.replace(/\.\w+$/, "");
-  const raw = stem + (IS_WIN ? ".wav" : ".aiff");
-  if (IS_WIN) {
+  const raw = stem + (IS_MAC ? ".aiff" : ".wav");
+  if (IS_MAC) {
+    await run(SAY, ["-v", voice, "-r", "168", "-o", raw, text]);
+  } else {
     // The line goes through a file, never the command line, so quotes or symbols in it cannot break the script.
     const lineFile = stem + ".line.txt";
     writeFileSync(lineFile, text, "utf8");
     try {
-      powershell(
-        `Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SelectVoice(${psQuote(voice)}); $s.SetOutputToWaveFile(${psQuote(raw)}); $s.Speak([System.IO.File]::ReadAllText(${psQuote(lineFile)}, [System.Text.Encoding]::UTF8)); $s.Dispose()`,
-        300_000,
-      );
+      if (IS_WIN) {
+        powershell(
+          `Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SelectVoice(${psQuote(voice)}); $s.SetOutputToWaveFile(${psQuote(raw)}); $s.Speak([System.IO.File]::ReadAllText(${psQuote(lineFile)}, [System.Text.Encoding]::UTF8)); $s.Dispose()`,
+          300_000,
+        );
+      } else {
+        await run(ESPEAK, ["-v", voice, "-s", "160", "-w", raw, "-f", lineFile]).catch((err: NodeJS.ErrnoException) => {
+          throw err.code === "ENOENT" ? new Error("No computer voice on this Linux: sudo apt install espeak-ng, or use Google's voices (engine gemini).") : err;
+        });
+      }
     } finally {
       rmSync(lineFile, { force: true });
     }
-  } else {
-    await run(SAY, ["-v", voice, "-r", "168", "-o", raw, text]);
   }
   await run(FFMPEG, ["-y", "-i", raw, "-af", "highpass=f=80,acompressor=threshold=-18dB:ratio=3:attack=5:release=120,loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "48000", "-ac", "2", target]);
   rmSync(raw, { force: true });

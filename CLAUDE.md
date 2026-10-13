@@ -362,3 +362,25 @@ The preview tool could not read the project while it lived in ~/Desktop; check t
   SAVED key with the same free model-list call and returns only ok + last four characters. Before, the panel said "a key
   is saved" whenever the file existed, so a deleted or restricted key only surfaced as a failed narration. Verified: no
   key / fake key (401) / real key, and the button on a scratch Studio (FLOW_MCP_HOME + port 8799, key via GEMINI_API_KEY).
+- ANY MCP APP (2026-10-13). (1) index.ts used to `await startServer()` (the port probe can retry ~36 s when the owner is
+  busy) BEFORE connecting stdio; Codex gives a server 10 s to start. stdio now connects at once and every tool goes
+  through `use()`, which waits for the role in the background. Measured: initialize in 1.5-3 s, also with port 8799
+  held by a server that never answers. (2) The server sends MCP `instructions` (playbook.ts INSTRUCTIONS, built from
+  PLAYBOOK.workflow), so a model sees the workflow before its first call, not only inside flow_status. (3) Gemini's
+  function calling (Antigravity, Gemini CLI) rejects anyOf/const: `duration` was a union of literals and both
+  `acknowledge_cost` fields were z.literal(true). Now int 4-10 + refine, and boolean + refine; the server still refuses
+  5 and false. A client test lists every tool schema and finds none of anyOf/oneOf/allOf/const/$ref/not.
+  (4) `npm run connect` (src/connect.ts) writes the "flow" entry into each app's own settings with absolute paths
+  (process.execPath + dist/index.js) and FLOW_MCP_OUTPUT when set; backs a file up to <file>.bak-flowmcp before its
+  first change; --dry-run shows only our entry (these files hold account ids). Antigravity's global file is
+  ~/.gemini/config/mcp_config.json per its own bundled docs (agy-customizations/docs/mcp_servers.md), NOT
+  ~/.gemini/antigravity/ as the README said; it may exist and be empty. Codex: only [mcp_servers.flow*] tables are
+  replaced, plus startup_timeout_sec = 60 (verified on a real config: all 82 lines kept). Connected Codex and
+  Antigravity on Windows this way. AGENTS.md points other coding agents at this file.
+- UBUNTU (2026-10-13, written to each tool's documented behaviour, NOT yet run on a real Ubuntu): Chrome is looked for
+  at google-chrome(-stable), /opt/google/chrome/chrome, chromium(-browser), then /snap/bin/chromium; a snap browser
+  with the profile under a hidden home folder stops with a clear message (snaps cannot touch ~/.dotdirs).
+  extractZip: GNU tar cannot read ZIPs, so Linux tries unzip -> bsdtar -> `python3 -m zipfile -e` (the python3 path
+  was exercised on Windows). systemDownloadsDir() asks `xdg-user-dir DOWNLOAD` (~/Unduhan on an Indonesian desktop).
+  Computer voices: espeak-ng (`--voices=en` to list; `-w out.wav -f line.txt`, text via a file like Windows).
+  `Flow Studio.sh` launcher (loads nvm when started from the desktop). package.json engines node >=22.

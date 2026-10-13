@@ -28,3 +28,14 @@ export const PLAYBOOK = {
     "reference_images (max 3) keep a product or person consistent without fixing the first frame.",
   ],
 };
+
+// The same rules as MCP server instructions, which every MCP app (Codex, Antigravity, Gemini CLI, Cursor, Claude) hands
+// its model when it connects - before the model has called flow_status even once, and whether or not it ever does.
+export const INSTRUCTIONS = [
+  "flow-mcp drives Google Flow (AI video and image generation) in a Chrome window on the user's own computer and spends the user's Google AI credits.",
+  ...PLAYBOOK.workflow,
+  `Stills with Nano Banana 2: ${PLAYBOOK.models["Nano Banana 2"]}`,
+  "flow_status also returns the full prompt playbook: models and their credit prices, prompt order, and the continuity tools.",
+]
+  .map((line) => `- ${line}`)
+  .join("\n");

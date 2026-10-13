@@ -1,10 +1,10 @@
 import { closeSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 import type { Locator, Page } from "playwright-core";
 import { HOME_DIR, OUTPUT_ROOT, getFlowPage } from "./chrome.js";
 import type { Job } from "./queue.js";
-import { extractZip, moveFile } from "./platform.js";
+import { extractZip, moveFile, systemDownloadsDir } from "./platform.js";
 
 export interface FlowState {
   url: string;
@@ -477,7 +477,7 @@ async function useOwnDownloadDir(page: Page): Promise<void> {
 }
 
 // Chrome's own Downloads folder, where files land whenever the override above has been reset out from under us.
-const SYSTEM_DOWNLOADS = join(homedir(), "Downloads");
+const SYSTEM_DOWNLOADS = systemDownloadsDir();
 
 // Everything already sitting in either folder, so a new arrival can be told apart from what was there before.
 function downloadsNow(): Set<string> {

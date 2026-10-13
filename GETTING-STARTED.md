@@ -27,8 +27,9 @@ credits, so a free account makes a few clips a day. A paid Google AI plan adds m
 
 Prices and limits change; check each company's own page.
 
-**Your computer:** a Mac, or a Windows 10/11 PC. It can't run in a cloud workspace or on a phone, because
-it controls a Chrome window on the computer it's installed on. Keep the computer awake while it's making
+**Your computer:** a Mac, a Windows 10/11 PC, or Ubuntu Desktop (Ubuntu is new and not yet tried on a real
+machine; Ubuntu Server cannot work, it has no screen for the Chrome window). It can't run in a cloud workspace or
+on a phone, because it controls a Chrome window on the computer it's installed on. Keep the computer awake while it's making
 something.
 
 ---
@@ -98,6 +99,32 @@ winget install Google.Chrome
 
 Then close and reopen PowerShell.
 
+**Ubuntu.** In a terminal (it asks for your password):
+
+```bash
+sudo apt install git ffmpeg unzip espeak-ng curl
+```
+
+Node.js 22 or newer (Ubuntu's own package is too old):
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+```
+
+```bash
+sudo apt install nodejs
+```
+
+Google Chrome: download the `.deb` from [google.com/chrome](https://www.google.com/chrome/), then, in the folder
+it downloaded to:
+
+```bash
+sudo apt install ./google-chrome-stable_current_amd64.deb
+```
+
+Use Google Chrome, not Ubuntu's Chromium: Chromium comes as a snap, and snaps cannot use the hidden `~/.flow-mcp`
+folder the tool keeps its Chrome profile in.
+
 ### B2. Get Flow MCP
 
 ```bash
@@ -152,8 +179,15 @@ Skip this if you'll only use Flow Studio.
    Quit) and open it again. Just closing the window isn't enough.
 4. Ask: *"Check my Flow session."*
 
-To connect Claude Code, Codex or Antigravity by hand instead, see the
-[README](README.md#connect-it-to-claude-codex-or-antigravity).
+**Codex, Antigravity, Gemini CLI, Cursor, Claude Code** and the Claude app too: in the `flow-mcp` folder run
+
+```bash
+npm run connect
+```
+
+It finds the apps on this computer and connects the ones you say yes to. Then restart each app and ask *"Check my
+Flow session."* Doing it by hand instead, or another app: see the
+[README](README.md#connect-it-to-claude-codex-antigravity-or-any-mcp-app).
 
 ---
 
@@ -164,7 +198,7 @@ Nothing needs to run all the time.
 | | Starts | Stops |
 |---|---|---|
 | **The Flow tools in your assistant** | By themselves, when the assistant app opens | When you quit the app |
-| **Flow Studio, the control panel** | While your assistant is open: go to **http://127.0.0.1:8787** in your browser. Without one: double-click **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows) in the `flow-mcp` folder, and it opens the panel for you | When you quit the assistant, or close the Flow Studio window you started |
+| **Flow Studio, the control panel** | While your assistant is open: go to **http://127.0.0.1:8787** in your browser. Without one: double-click **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows) in the `flow-mcp` folder, or on Ubuntu run `./"Flow Studio.sh"` there, and it opens the panel for you | When you quit the assistant, or close the Flow Studio window you started |
 | **The Flow Chrome window** | `npm run login`, or by itself when the tool needs Flow | Close it any time; keep it open while something is being made |
 
 So Flow Studio is only running while your assistant is open, or while its own window is. If the panel says

@@ -23,7 +23,16 @@ const sceneSchema = z.object({
     .optional()
     .describe("Model label as shown in Flow, e.g. 'Omni 1.1 Flash', 'Veo 3.1 - Fast', 'Veo 3.1 - Quality', 'Nano Banana 2'. Omit to keep Flow's current model."),
   aspect_ratio: z.enum(["16:9", "9:16", "1:1", "4:3", "3:4"]).optional().describe("Video supports 16:9 and 9:16 only."),
-  duration: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10)]).optional().describe("Video length in seconds. Omni models only; Veo 3.1 clips are fixed at 8s."),
+  // A plain integer checked here, not a union of literals: that becomes anyOf/const in JSON Schema, which Gemini's
+  // function calling (Antigravity, Gemini CLI) does not accept. acknowledge_cost below follows the same rule.
+  duration: z
+    .number()
+    .int()
+    .min(4)
+    .max(10)
+    .refine((s) => [4, 6, 8, 10].includes(s), "duration must be 4, 6, 8 or 10")
+    .optional()
+    .describe("Video length in seconds: 4, 6, 8 or 10. Omni models only; Veo 3.1 clips are fixed at 8s."),
   resolution: z.enum(["360p", "720p"]).optional().describe("Video resolution. Omni models only."),
   max_credits: z.number().int().min(0).default(25).describe("Safety cap: the scene is skipped (nothing spent) if Flow quotes more credits than this."),
   variants: z.number().int().min(1).max(4).optional().describe("Outputs per prompt (each one spends credits). Default 1."),
@@ -96,7 +105,7 @@ export const shapes = {
       .enum(["gemini", "mac"])
       .default("gemini")
       .describe(
-        "'gemini' uses Google AI Studio's text-to-speech - the same voices Flow has, free on the AI Studio tier, no length limit, needs a key in ~/.flow-mcp/gemini-key. 'mac' uses a voice installed on this computer (macOS voices on a Mac, the built-in speech voices on Windows): free, instant, no key.",
+        "'gemini' uses Google AI Studio's text-to-speech - the same voices Flow has, free on the AI Studio tier, no length limit, needs a key in ~/.flow-mcp/gemini-key. 'mac' uses a voice installed on this computer (macOS voices on a Mac, the built-in speech voices on Windows, espeak-ng on Linux): free, instant, no key.",
       ),
     text: z.string().min(1).max(400).describe("The line to speak. About 20 words fits 8 s, 30 words fits 12 s; anything longer needs a longer take."),
     voice: z.string().min(1).default("Charon").describe("Voice name from flow_voices, e.g. Charon (informative), Aoede (breezy), Gacrux (mature) for Google; Zoe or Samantha for macOS."),
@@ -107,7 +116,8 @@ export const shapes = {
     asset: z.string().min(1).describe("Title (or title prefix) of a video already in the Flow project; see flow_assets."),
     prompt: z.string().min(1).describe("What to change, e.g. 'change the time of day to golden hour', 'remove the cup', 'make it snow'."),
     acknowledge_cost: z
-      .literal(true)
+      .boolean()
+      .refine((ok) => ok, "acknowledge_cost must be true: this spends credits with no quote first")
       .describe("Must be true. Flow shows no quote for edits, so max_credits cannot protect you: a 4 s clip cost 20 credits when measured. The real cost is reported on the finished job."),
     download_quality: z.enum(["original", "upscaled"]).optional(),
   },
@@ -128,7 +138,8 @@ export const shapes = {
         "'exact' uses Flow's first-frame animation (I2V): the clip begins on the source clip's real last frame, invisible cut, but attached characters are IGNORED - the likeness has to come from the frame itself. 'likeness' uses reference-to-video (R2V): the character stays locked but the opening frame is only approximate. Flow cannot do both; this is a model limit, not a UI one.",
       ),
     acknowledge_cost: z
-      .literal(true)
+      .boolean()
+      .refine((ok) => ok, "acknowledge_cost must be true: this spends credits with no quote first")
       .describe("Must be true. Agent mode shows no credit quote before it runs, so max_credits cannot protect you; the real cost is reported on the finished job."),
     download_quality: z.enum(["original", "upscaled"]).optional(),
     force: z
@@ -499,7 +510,7 @@ export class LocalCore implements Core {
 
   async voices() {
     // The panel words itself from these, so a PC never reads "this Mac".
-    const place = { computer: COMPUTER, bin: BIN, local_engine: IS_MAC ? "macOS voice" : IS_WIN ? "Windows voice" : "System voice", platform: process.platform };
+    const place = { computer: COMPUTER, bin: BIN, local_engine: IS_MAC ? "macOS voice" : IS_WIN ? "Windows voice" : "Linux voice (espeak-ng)", platform: process.platform };
     return { gemini: GEMINI_VOICES, gemini_ready: Boolean(geminiKey()), mac: await localVoices(), place };
   }
 

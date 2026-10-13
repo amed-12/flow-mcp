@@ -21,11 +21,11 @@ New here? [GETTING-STARTED.md](GETTING-STARTED.md) takes you from nothing to you
 
 | | |
 |---|---|
-| **macOS or Windows 10/11** | Developed and tested on macOS. Windows is supported (Chrome, the computer's own voices, the Recycle Bin and the panel launcher all have Windows versions), but it hasn't been run on a real PC yet, so please report anything that breaks |
-| **Node.js 22 or newer** | `node --version` |
-| **Google Chrome** | Any recent version |
+| **macOS, Windows 10/11 or Ubuntu Desktop** | Developed and tested on macOS; run end to end on Windows 11 (2026-10-13). Ubuntu is supported in the code (Chrome, espeak-ng voices, the Trash, ZIPs, the panel launcher) but has not been run on a real machine yet, so please report anything that breaks. Ubuntu *Server* cannot work: the Chrome window needs a desktop |
+| **Node.js 22 or newer** | `node --version`. Ubuntu's own package is older: install 22 from NodeSource or with nvm |
+| **Google Chrome** | Any recent version. On Ubuntu, Google's `.deb`, not the Chromium snap (snaps cannot use the hidden `~/.flow-mcp` folder) |
 | **A Google account** | Free. Flow gives every account 50 credits a day; a paid Google AI plan adds more and unlocks 1080p downloads. Developed on a Pro plan |
-| **FFmpeg** *(optional)* | Mac: `brew install ffmpeg` · Windows: `winget install Gyan.FFmpeg`. Needed only to join clips, mix music or record narration |
+| **FFmpeg** *(optional)* | Mac: `brew install ffmpeg` · Windows: `winget install Gyan.FFmpeg` · Ubuntu: `sudo apt install ffmpeg`. Needed only to join clips, mix music or record narration |
 | **A Google AI Studio key** *(optional, free)* | Only for the Google narration voices. See below |
 
 A display must stay awake: the Chrome window is really being driven, so the machine cannot be
@@ -48,6 +48,9 @@ npm run build
 >
 > **Windows: keep it out of folders OneDrive syncs** (often Desktop and Documents), where files can be held
 > online-only. `C:\Users\<you>\flow-mcp` is fine.
+>
+> **Ubuntu:** first `sudo apt install git ffmpeg unzip espeak-ng`, Node.js 22 from NodeSource or nvm, and Google
+> Chrome from google.com/chrome (the `.deb`). `~/flow-mcp` is fine.
 
 Then sign in, once:
 
@@ -62,52 +65,62 @@ everyday browser.
 
 ---
 
-## Connect it to Claude, Codex or Antigravity
+## Connect it to Claude, Codex, Antigravity or any MCP app
 
-**Claude Code**
+The quick way, from the `flow-mcp` folder:
 
 ```bash
-claude mcp add --scope user flow -- node /absolute/path/to/flow-mcp/dist/index.js
+npm run connect
 ```
 
-`--scope user` makes it available in every folder; the default (`local`) only works in the folder you ran it from.
+It finds the AI apps installed on this computer and, after you say yes, writes a `flow` entry into each one's own
+MCP settings. Or name them: `npm run connect -- codex antigravity` (or `all`). Add `--dry-run` to see what would
+be written without writing it, and `npm run connect -- print` prints the entry for any app it does not know.
 
-**Claude Desktop**: add to `claude_desktop_config.json` (Mac: `~/Library/Application Support/Claude/`, Windows:
-`%APPDATA%\Claude\`). On Windows, write the path with doubled backslashes, like
-`"C:\\Users\\you\\flow-mcp\\dist\\index.js"`:
+| App | Name | Where it writes |
+|---|---|---|
+| Codex | `codex` | `~/.codex/config.toml`, only the `[mcp_servers.flow]` tables |
+| Antigravity | `antigravity` | `~/.gemini/config/mcp_config.json` (the global file, per Antigravity's own docs) |
+| Gemini CLI | `gemini-cli` | `~/.gemini/settings.json` |
+| Cursor | `cursor` | `~/.cursor/mcp.json` |
+| Claude Code | `claude-code` | runs `claude mcp add --scope user flow ...` |
+| Claude Desktop | `claude-desktop` | `claude_desktop_config.json` (Mac and Windows; there is no Linux app) |
+| VS Code | `vscode` | prints the `code --add-mcp` command |
+
+Every entry uses absolute paths (this Node and this folder), because apps started from the desktop often cannot
+find `node` on their PATH. Other servers in those files are left alone, the file is copied to
+`<file>.bak-flowmcp` before its first change, and `FLOW_MCP_OUTPUT`, if set, is written into the entry too.
+
+**By hand**, for any other MCP app (Cursor, VS Code, Windsurf and the rest take the same thing): the command
+is `node` and the one argument is the absolute path to `dist/index.js`. In JSON settings:
 
 ```json
 { "mcpServers": { "flow": { "command": "node", "args": ["/absolute/path/to/flow-mcp/dist/index.js"] } } }
 ```
 
-**Codex**: add to `~/.codex/config.toml` (on Windows, `%USERPROFILE%\.codex\config.toml`):
+On Windows, write the path with doubled backslashes, like `"C:\\Users\\you\\flow-mcp\\dist\\index.js"`. Codex
+takes TOML in `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.flow]
 command = "node"
 args = ["/absolute/path/to/flow-mcp/dist/index.js"]
+startup_timeout_sec = 60
 ```
 
-Or run `codex mcp add flow -- node /absolute/path/to/flow-mcp/dist/index.js`. No timeout setting is needed:
-Codex, like most MCP apps, gives up on a tool call after 60 seconds, so any call that runs longer than about
-45 seconds (creating a character, a 1080p download) answers with a task id instead and keeps working, and
-`flow_wait` collects the result.
+Timeouts need no other setting. Most MCP apps give up on a tool call after 60 seconds, so any call that runs
+longer than about 45 seconds (creating a character, a 1080p download) answers with a task id instead and keeps
+working, and `flow_wait` collects the result. The server answers an app's start-up handshake at once, and its
+tool descriptions use only the JSON Schema that Gemini's function calling accepts (Antigravity, Gemini CLI).
+It also sends the app a short set of instructions (check the session first, say what credits will be spent,
+keep calling `flow_wait`), so any model knows the workflow before its first call.
 
-**Antigravity** (Google's coding app): add a `flow` entry to `mcp_config.json`. On a Mac it lives in
-`~/.gemini/antigravity/`; you can also open it from the agent panel's **…** menu → **Manage MCP Servers** →
-**View raw config**. Keep any servers already listed and add this one beside them:
+ChatGPT in the browser or the ChatGPT app can't use it: its connectors only reach servers on the internet, and
+this tool has to run on your own computer to drive your Chrome window.
 
-```json
-{ "mcpServers": { "flow": { "command": "node", "args": ["/absolute/path/to/flow-mcp/dist/index.js"] } } }
-```
-
-**Other MCP apps** (Cursor, VS Code and others) take the same command and arguments in their own MCP
-settings. ChatGPT in the browser or the ChatGPT app can't use it: its connectors only reach servers on
-the internet, and this tool has to run on your own computer to drive your Chrome window.
-
-Developed and tested with Claude. Codex and Antigravity speak the same protocol, so they should work the
-same way, but neither has been tried yet, so please report how it goes. Running two of them at once is safe:
-the first one started drives Flow, and the others pass their requests to it.
+Developed and tested with Claude. Codex and Antigravity were connected with `npm run connect` on Windows
+(2026-10-13); please report how working with them goes. Running several apps at once is safe: the first one
+started drives Flow, and the others pass their requests to it.
 
 Restart the app, then ask it: *"check my Flow session"*. You should get your plan and credit balance
 back. Everything after that is plain English; you never type tool names.
@@ -141,7 +154,8 @@ The same features, without an AI assistant in the loop:
 npm run studio     # then open http://127.0.0.1:8787
 ```
 
-or double-click **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows).
+or double-click **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows). On Ubuntu, run
+`./"Flow Studio.sh"` in a terminal, or right-click it in Files → **Run as a Program**.
 
 Seven tabs, in the order you would use them:
 

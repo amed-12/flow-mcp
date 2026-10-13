@@ -8,7 +8,7 @@
 
 **There is no website, no cloud service, and no account to sign up for.**
 
-Everything here is a small program sitting on your own computer (a Mac or a Windows PC) in the folder
+Everything here is a small program sitting on your own computer (a Mac, a Windows PC or Ubuntu) in the folder
 `~/flow-mcp`. When it runs, it opens a private Chrome window, signs into Google
 Flow as you, and clicks Flow's real buttons, the same ones you'd click
 yourself. Nothing is hosted anywhere else. Nothing leaves your machine except
@@ -46,13 +46,19 @@ logins and tabs stay untouched.
   Codex, like most assistants, stops waiting on any single step after a minute, and some steps here take
   longer (making a character, a high-quality download, waiting on a video). So a slow step answers within
   about 45 seconds with a ticket number, carries on in the background, and the assistant collects the
-  result with that ticket. It hasn't been tried with Codex yet.
+  result with that ticket.
+- **Antigravity and Gemini CLI**: Google's assistants. Same standard again; the tool's step descriptions are
+  written in the form Google's models accept.
 - **Other apps that support MCP**, like Cursor and VS Code, use the same setup.
+- One command, `npm run connect`, finds which of these apps are on your computer and connects them for you.
+  Codex and Antigravity were connected this way on 2026-10-13; working with them day to day is still to be
+  reported.
 - **Not ChatGPT in the browser or the ChatGPT app.** Those can only reach tools on the internet, and this
   one has to run on your own computer, because it drives the Chrome window there.
 - **No assistant at all**: the control panel does everything on its own.
 
-Mac is the tested platform. Windows support is new and hasn't been tried on a real PC yet.
+Mac is the tested platform, and Windows 11 has now been run end to end. Ubuntu Desktop support is new and hasn't
+been tried on a real machine yet.
 
 ---
 
@@ -104,7 +110,7 @@ This is a limit in Flow itself, not something we can program around. The exact j
 
 | Name | What it does |
 |---|---|
-| **Voiceover Recorder** | Narration for free, at any length. Either Google AI Studio's text-to-speech (the same voices Flow has, and you can tell it *how* to read the line; keep that note short) or a voice already on your computer (macOS voices on a Mac, Windows' own voices on a PC) |
+| **Voiceover Recorder** | Narration for free, at any length. Either Google AI Studio's text-to-speech (the same voices Flow has, and you can tell it *how* to read the line; keep that note short) or a voice already on your computer (macOS voices on a Mac, Windows' own voices on a PC, espeak-ng on Ubuntu) |
 | **Voice List** | Every narrator available to you |
 | **Film Cutter** | Joins clips into one film using FFmpeg, a free video toolkit: the clips you made, or any video you pick, in the order you choose. Lays the narration on top, adds a looping music bed, and lets you turn the clips' own sound down so it doesn't drown out the voice. Sizes everything to match your best clip, and can hold the last frame if the voice runs longer than the footage |
 
@@ -113,7 +119,8 @@ This is a limit in Flow itself, not something we can program around. The exact j
 ## The control panel
 
 A web page served by that same program, reachable only from your own computer.
-Start it by double-clicking **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows) in the project folder.
+Start it by double-clicking **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows) in the project folder,
+or on Ubuntu by running **Flow Studio.sh** there.
 
 Seven tabs, in the order you'd use them:
 
@@ -203,7 +210,7 @@ The same goes for a job that seems to vanish while it is running. What Flow is h
 | The program | `~/flow-mcp` |
 | Finished films and stills | `~/flow-mcp-out/<project name>` |
 | The private Chrome profile | `~/.flow-mcp/chrome-profile` |
-| The control panel | Started by **Flow Studio.command** (Mac) or **Flow Studio.cmd** (Windows), opens on your computer only |
+| The control panel | Started by **Flow Studio.command** (Mac), **Flow Studio.cmd** (Windows) or **Flow Studio.sh** (Ubuntu), opens on your computer only |
 | Sign in to Flow by hand | `npm run login` in the project folder |
 
 Your Google password is never typed by the program; you sign in yourself, once,

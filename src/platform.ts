@@ -14,6 +14,11 @@ export const COMPUTER = IS_MAC ? "this Mac" : IS_WIN ? "this PC" : "this compute
 export const BIN = IS_MAC ? "the Mac's Trash" : IS_WIN ? "the Recycle Bin" : "the Trash";
 
 export const FFMPEG_HINT = IS_MAC ? "brew install ffmpeg" : IS_WIN ? "winget install Gyan.FFmpeg" : "sudo apt install ffmpeg";
+export const CHROME_HINT = IS_MAC
+  ? "brew install --cask google-chrome"
+  : IS_WIN
+    ? "winget install Google.Chrome"
+    : "install the .deb from google.com/chrome, then sudo apt install ./google-chrome-stable_current_amd64.deb";
 
 // PowerShell single-quoted string: the only character that needs escaping is the quote itself.
 export const psQuote = (s: string) => `'${s.replace(/'/g, "''")}'`;
@@ -68,15 +73,30 @@ export function moveToBin(target: string): string {
   }
 }
 
-// Unpacks a ZIP with the system's own tools: tar on macOS and Windows 10+ is bsdtar, which reads ZIPs; unzip is the
-// fallback (Linux, older Windows). Returns every file inside, however deeply the archive nested them.
-export function extractZip(zip: string, dest: string): string[] {
+// Ways to unpack a ZIP, tried in order. tar on macOS and Windows 10+ is bsdtar, which reads ZIPs; GNU tar on Linux does
+// not, and unzip is not on every Ubuntu, but python3 is, and its zipfile module unpacks from the command line.
+type Unzipper = [string, (zip: string, dest: string) => string[]];
+const UNZIPPERS: Record<string, Unzipper> = {
+  tar: ["tar", (zip, dest) => ["-xf", zip, "-C", dest]],
+  bsdtar: ["bsdtar", (zip, dest) => ["-xf", zip, "-C", dest]],
+  unzip: ["unzip", (zip, dest) => ["-o", "-q", zip, "-d", dest]],
+  python3: ["python3", (zip, dest) => ["-m", "zipfile", "-e", zip, dest]],
+};
+export const UNZIP_ORDER = IS_MAC || IS_WIN ? ["tar", "unzip"] : ["unzip", "bsdtar", "python3"];
+
+// Unpacks a ZIP with the system's own tools. Returns every file inside, however deeply the archive nested them.
+export function extractZip(zip: string, dest: string, order = UNZIP_ORDER): string[] {
   mkdirSync(dest, { recursive: true });
-  try {
-    execFileSync("tar", ["-xf", zip, "-C", dest], { stdio: "ignore" });
-  } catch {
-    execFileSync("unzip", ["-o", "-q", zip, "-d", dest], { stdio: "ignore" });
-  }
+  const unpacked = order.some((name) => {
+    const [bin, args] = UNZIPPERS[name];
+    try {
+      execFileSync(bin, args(zip, dest), { stdio: "ignore", windowsHide: true });
+      return true;
+    } catch {
+      return false;
+    }
+  });
+  if (!unpacked) throw new Error(`Could not unpack ${basename(zip)}: none of ${order.join(", ")} worked.${IS_MAC || IS_WIN ? "" : " Install one: sudo apt install unzip"}`);
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const f of readdirSync(dir)) {
@@ -88,6 +108,20 @@ export function extractZip(zip: string, dest: string): string[] {
   };
   walk(dest);
   return files;
+}
+
+// Chrome's own download folder. On Linux it follows the desktop's language (~/Unduhan, ~/Téléchargements), which
+// xdg-user-dir reports; everywhere else, and when that tool is missing, it is ~/Downloads.
+export function systemDownloadsDir(): string {
+  if (!IS_MAC && !IS_WIN) {
+    try {
+      const dir = execFileSync("xdg-user-dir", ["DOWNLOAD"], { encoding: "utf8", timeout: 3000 }).trim();
+      if (dir && dir !== homedir()) return dir;
+    } catch {
+      // Not a freedesktop system, or the tool is not installed.
+    }
+  }
+  return join(homedir(), "Downloads");
 }
 
 // Opens a page in the default browser.
