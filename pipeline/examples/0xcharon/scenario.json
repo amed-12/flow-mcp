@@ -1,0 +1,150 @@
+{
+  "slug": "0xcharon",
+  "title": "0xcharon - The Charon Trenches Agent",
+  "engine": "remotion",
+  "aspect": "16:9",
+  "fps": 30,
+  "duration_s": 30,
+  "language": "en",
+  "voice": {
+    "engine": "kokoro",
+    "voice": "am_michael"
+  },
+  "style": {
+    "background": "#F4F3EE",
+    "ink": "#0B0B0B",
+    "accent": "#B8F400",
+    "warn": "#F5A524",
+    "danger": "#F0525C",
+    "font_display": "Space Grotesk",
+    "font_mono": "JetBrains Mono",
+    "notes": "Neo-brutalist fintech console: thick black outlines, hard offset shadows, rounded cards, faint grid."
+  },
+  "guardrails": [
+    "No profit promises, no 'guaranteed', no invented returns, win rates or PnL numbers.",
+    "Charts and stat cards are shapes only, never real figures.",
+    "The end card says paper trading is available, it is not financial advice and crypto trading is risky."
+  ],
+  "scenes": [
+    {
+      "id": "intro",
+      "duration_s": 4,
+      "goal": "Name the product and set the mood.",
+      "visual": "A flat-vector ferryman's boat with a lime lantern glides in over a river of bobbing candlesticks. Kicker pill, big title, subtitle.",
+      "on_screen_text": [
+        "AUTONOMOUS SOLANA TRADING AGENT",
+        "Meet 0xcharon",
+        "The Charon Trenches Agent"
+      ],
+      "narration": "Meet Zero X Charon. The Charon Trenches Agent.",
+      "sound": [
+        "soft whoosh as the boat glides in"
+      ],
+      "transition_in": "none"
+    },
+    {
+      "id": "scanner",
+      "duration_s": 5.5,
+      "goal": "It watches new Solana tokens all the time.",
+      "visual": "Radar sweeps on the right; three token rows pop in on the left with stage pills (ready for review, watch, early info) and score bars filling.",
+      "on_screen_text": [
+        "Scans new Solana tokens, nonstop.",
+        "SCANNER LIVE 24/7",
+        "READY FOR REVIEW",
+        "WATCH",
+        "EARLY INFO"
+      ],
+      "narration": "It scans new Solana tokens around the clock, and scores every one.",
+      "sound": [
+        "radar pings each sweep",
+        "small pops as rows land"
+      ],
+      "transition_in": "slide-left"
+    },
+    {
+      "id": "gate",
+      "duration_s": 4.5,
+      "goal": "Every decision comes with a reason.",
+      "visual": "Token cards ride a conveyor through a lime gate: rejected ones turn coral and drop off, one passes with a check. Two reason cards: why it passed, why it entered.",
+      "on_screen_text": [
+        "Scores every token. Tells you why.",
+        "WHY IT PASSED",
+        "Filtered out",
+        "Route not supported",
+        "WHY IT ENTERED",
+        "Market cap in range",
+        "Liquidity looks safe"
+      ],
+      "narration": "Then it tells you exactly why it entered, or passed.",
+      "sound": [
+        "buzz for each rejected card",
+        "chime for the accepted one"
+      ],
+      "transition_in": "wipe-left"
+    },
+    {
+      "id": "console",
+      "duration_s": 6,
+      "goal": "One console shows everything.",
+      "visual": "Status pills (RPC healthy, Solana mainnet, paper), a chart line drawing itself, a ring gauge filling, four stat cards popping in with bars, no numbers.",
+      "on_screen_text": [
+        "Everything on one console.",
+        "RPC HEALTHY",
+        "SOLANA MAINNET",
+        "PAPER",
+        "PNL / PORTFOLIO PERFORMANCE",
+        "TOTAL PNL",
+        "OPEN TRADES",
+        "WIN RATE",
+        "CAPITAL USED"
+      ],
+      "narration": "Track P.N.L., win rate and open trades, on one console.",
+      "sound": [
+        "rising shimmer while the chart draws",
+        "clicks as stat cards land"
+      ],
+      "transition_in": "slide-up"
+    },
+    {
+      "id": "controls",
+      "duration_s": 5,
+      "goal": "The operator stays in control, and can start without risk.",
+      "visual": "Entries toggle flips from on to paused; the Panic Close button is pressed with a red ring; a PAPER pill and line appear.",
+      "on_screen_text": [
+        "One tap to pause. One to Panic Close.",
+        "ENTRY SEARCH CONTROL",
+        "Entries on / Entries paused",
+        "Open positions keep being watched.",
+        "Panic Close",
+        "PAPER",
+        "Start in paper mode. No SOL at risk."
+      ],
+      "narration": "Pause new entries in one tap, or hit Panic Close. Start in paper mode, without risking a single SOL.",
+      "sound": [
+        "switch click",
+        "deep thunk on Panic Close",
+        "pop for the paper line"
+      ],
+      "transition_in": "wipe-right"
+    },
+    {
+      "id": "end-card",
+      "duration_s": 5,
+      "goal": "Brand, tagline, where to go, honest disclaimer.",
+      "visual": "Logo tile pops in, wordmark, tagline, URL in a black pill with a lime glow, small disclaimer at the bottom.",
+      "on_screen_text": [
+        "0x",
+        "0xcharon",
+        "Autonomous degen trading. Executed with precision.",
+        "charon.hermes-amed.my.id",
+        "Paper trading available · Not financial advice · Crypto trading is risky"
+      ],
+      "narration": "Autonomous degen trading, executed with precision.",
+      "sound": [
+        "logo pop",
+        "one confident chime"
+      ],
+      "transition_in": "fade"
+    }
+  ]
+}

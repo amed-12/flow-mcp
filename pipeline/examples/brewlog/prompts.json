@@ -1,0 +1,81 @@
+{
+  "slug": "brewlog",
+  "engine": "remotion",
+  "remotion": {
+    "scenes": [
+      {
+        "id": "hook",
+        "component": "Hook",
+        "spec": "Canvas 1080x1920 (9:16), 3.0 s, no transition in. Stage with faint grid (line colour). All key text stays 80 px from the sides, 100 px from top/bottom. ELEMENTS: (1) kicker Pill bg accentSoft, text 'EVERY CUP IS DIFFERENT' mono 40 px, centred at x 540, y 260; (2) headline 'What worked?' DM Serif Display 168 px, ink, centred, y 400-600, wraps never; (3) pour-over dripper flat illustration, 300x380 px centred at x 540, y 700-1080: a cone in accent with 5 px ink outline, a thin ink stem under it, a drip dot (accent, 22 px) falling from the tip on a loop every 0.6 s; (4) three mugs in a row at y 1180-1480, each 250x240 px, x centres 220 / 540 / 860: body in bg-tinted white Card style (5 px ink outline, 28 px radius, 10 px hard ink shadow), accent handle ring on the right, coffee surface line in accent, each with a different steam swirl (2 wavy ink strokes 6 px, heights 70/110/90 px, phase offset 0.4 s each) rising continuously; (5) a danger-coloured '?' (DM Serif Display 96 px, 5 px ink outline stroke feel) above each mug at y 1060. ANIMATION: kicker fades+slides down 30 px at 0.1-0.5 s; headline springs in (scale 0.9->1, fade) at 0.3 s; dripper fades in at 0.5 s; mugs slide in from the right with spring, staggered 0.2 s from 0.7 s (centre mug at 0.9 s, right at 1.1 s); '?' marks pop (scale 0->1.15->1 spring) at 1.5 s, 1.7 s, 1.9 s, then each wobbles +-6 deg continuously; steam and drip loop throughout. Everything holds from 2.0 s; last 0.4 s is for the outgoing transition, nothing new enters after 2.0 s."
+      },
+      {
+        "id": "log",
+        "component": "Log",
+        "spec": "Canvas 1080x1920, 3.5 s, transition in slide-left. Stage with grid. ELEMENTS: (1) headline 'Log a brew in 3 taps' DM Serif Display 104 px, ink, centred, two lines, y 180-460, text max width 920 px; (2) phone-sized Card 720x1020 px centred at x 540, y 560-1580, 5 px ink outline, 10 px hard ink shadow, inside padding 48 px: a mono 'NEW BREW' label 34 px muted at top, then four rows each 624x150 px, 28 px gap, starting y 680: rows 'BEANS', 'GRIND', 'RATIO', 'TIME' with the label in mono 44 px ink on the left and a fill area on the right (shapes only: a bean icon for BEANS, three dots for GRIND, a 1:x bar made of two blocks for RATIO, a small clock circle for TIME - no digits, no numbers). Each row has a 4 px line outline and bg fill while empty; when filled it takes accentSoft fill, 4 px ink outline and a small ink check dot. (3) a finger tap dot: 56 px circle in accent with 5 px ink outline and an expanding ring (80->140 px, fading) on each tap. ANIMATION: headline fades up at 0.3 s; card springs up from 120 px below at 0.2-0.8 s; BEANS row fills at 0.9 s, GRIND at 1.4 s, RATIO at 1.9 s (these are the three taps: tap dot moves to the row 0.2 s before and rings at the fill; row scales 1->1.04->1 in 0.25 s); TIME row fills automatically at 2.4 s without a tap dot; a rising shimmer bar in accent runs along the card's left edge from 0.9 to 2.4 s. Tap dot fades out at 2.2 s. All holds until 3.1 s, last 0.4 s reserved for the transition."
+      },
+      {
+        "id": "rate",
+        "component": "Rate",
+        "spec": "Canvas 1080x1920, 2.5 s, transition in wipe-left. Stage with grid. ELEMENTS: (1) headline 'Rate it' DM Serif Display 176 px, ink, centred, y 260-500; (2) Card 880x520 px centred at x 540, y 640-1160 (5 px ink outline, 10 px hard shadow) carrying a row of five star shapes, each 128 px, 20 px gap, 5 px ink outline, empty fill bg; filled stars take warn fill. Stars are decorative only: no numbers, no score, no '5/5'. (3) stamp-style pill 'SAVED' Pill bg accent, mono 64 px, text colour ink, rotated -8 deg, centred at x 540, y 1300, 5 px ink outline and 10 px hard shadow; (4) 'BEANS / GRIND / RATIO / TIME' rows are not shown here. ANIMATION: the log card from the previous scene is implied by the wipe, nothing carried over. Headline springs in at 0.2 s; card scales 0.95->1 with fade at 0.3 s; stars fill left to right at 0.7, 0.95, 1.2, 1.45, 1.7 s, each with a scale pop 1->1.25->1 over 0.25 s and a small ink spark burst (4 short 6 px lines); SAVED stamps in at 1.9 s from scale 2.2 -> 1 with opacity 0->1 over 0.2 s plus a 6 px screen-shake of the card, then holds. Nothing enters after 1.9 s, last 0.4 s reserved."
+      },
+      {
+        "id": "best",
+        "component": "Best",
+        "spec": "Canvas 1080x1920, 3.5 s, transition in slide-up. Stage with grid. ELEMENTS: (1) headline 'Your best recipe' DM Serif Display 120 px, ink, centred, two lines, y 180-480, max width 920 px; (2) three recipe Cards 860x260 px, x centred at 540, 5 px ink outline, 10 px hard shadow, listed at y 600, 900, 1200 (40 px gap). Each card: a cup icon (80 px, ink outline) at left x 150, then two rounded bars (shapes only, no figures, no numbers: 380x24 and 260x24 px, line colour) as recipe rows. (3) BEST badge: Pill bg accent, text 'BEST' mono 48 px ink, rotated 6 deg, pinned to the top-right corner of the winning card at (x 880, y -20 relative to the card), with a 56 px coffee-cup icon (ink outline, accent fill) inside the card replacing its bars' left icon. ANIMATION: the three cards slide down from y -200 with fade, staggered 0.15 s from 0.3 s. At 1.3 s the third card (bottom) becomes the winner: the other two dim to 40 % opacity and slide down 40 px while the winner slides up to y 600 over 0.7 s (spring) and grows to scale 1.1 and gets accentSoft fill; the previous top card moves to y 900 and the middle to y 1200 (dimmed). BEST badge pops in (scale 0->1.2->1) at 2.1 s. Headline fades in at 0.2 s. Holds from 2.4 s; last 0.4 s reserved."
+      },
+      {
+        "id": "end",
+        "component": "End",
+        "spec": "Canvas 1080x1920, 2.5 s, transition in fade. Stage with grid, plain cream. ELEMENTS: (1) Card 880x420 px centred at x 540, y 480-900 with headline 'Brew it again.' DM Serif Display 150 px, ink, two lines centred in the card, 5 px ink outline, 10 px hard shadow; (2) link Pill bg accent, text 'brewlog.example' mono 56 px ink, centred at x 540, y 1060, inside max width 880 px (Pill, 4 px ink outline, with a 10 px hard ink shadow); (3) steaming mug icon, 260x250 px centred at x 540, y 1250-1500: white Card-style body, accent handle, accent coffee line, three wavy 6 px ink steam strokes rising and looping every 1.2 s. ANIMATION: headline card springs in (scale 0.9->1) at 0.2 s; link pill slides up 40 px with fade at 0.7 s; mug fades up and settles (translate Y 30->0) at 1.0-1.5 s; steam starts at 1.2 s. Everything holds still after 1.6 s except steam; keep 100 px of margin at the bottom; the video ends here so no outgoing transition, but nothing enters after 1.6 s."
+      }
+    ],
+    "voice": "af_heart",
+    "voiceover": [
+      { "at_s": 0.4, "text": "Every cup is different. What worked?", "speed": 1.08 },
+      { "at_s": 3.4, "text": "Brewlog logs a brew in three taps.", "speed": 1.08 },
+      { "at_s": 6.9, "text": "Then rate how it tasted.", "speed": 1.08 },
+      { "at_s": 9.4, "text": "And it shows your best recipe.", "speed": 1.08 },
+      { "at_s": 12.5, "text": "Brew it again. Brewlog dot example.", "speed": 1.18 }
+    ],
+    "music": {
+      "bpm": 96,
+      "chords": [
+        [57, 60, 64],
+        [53, 57, 60],
+        [48, 52, 55],
+        [55, 59, 62],
+        [53, 57, 60],
+        [48, 52, 55]
+      ],
+      "bass": [45, 41, 36, 43, 41, 36],
+      "drums_from_s": 3,
+      "end_s": 12.5,
+      "gain": 0.4
+    },
+    "sfx": [
+      { "at_s": 0.0, "kind": "whoosh", "gain": 0.18 },
+      { "at_s": 1.5, "kind": "click" },
+      { "at_s": 1.7, "kind": "click" },
+      { "at_s": 1.9, "kind": "click" },
+      { "at_s": 2.9, "kind": "whoosh" },
+      { "at_s": 3.9, "kind": "pop", "pitch": 72 },
+      { "at_s": 4.4, "kind": "pop", "pitch": 76 },
+      { "at_s": 4.9, "kind": "pop", "pitch": 79 },
+      { "at_s": 5.4, "kind": "shimmer", "length_s": 0.5, "gain": 0.2 },
+      { "at_s": 6.4, "kind": "whoosh" },
+      { "at_s": 7.2, "kind": "chime", "pitch": 72 },
+      { "at_s": 7.45, "kind": "chime", "pitch": 76 },
+      { "at_s": 7.7, "kind": "chime", "pitch": 79 },
+      { "at_s": 7.95, "kind": "chime", "pitch": 84 },
+      { "at_s": 8.2, "kind": "chime", "pitch": 88 },
+      { "at_s": 8.4, "kind": "thunk" },
+      { "at_s": 8.9, "kind": "whoosh" },
+      { "at_s": 10.1, "kind": "whoosh", "gain": 0.2 },
+      { "at_s": 11.1, "kind": "chime", "pitch": 79 },
+      { "at_s": 11.3, "kind": "chime", "pitch": 84 },
+      { "at_s": 12.4, "kind": "whoosh", "gain": 0.15 },
+      { "at_s": 13.7, "kind": "pop", "pitch": 76 },
+      { "at_s": 13.9, "kind": "shimmer", "length_s": 1.0, "gain": 0.12 }
+    ]
+  }
+}
