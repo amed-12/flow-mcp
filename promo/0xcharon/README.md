@@ -14,5 +14,16 @@ npx remotion render Promo out/0xcharon-promo.mp4
 ```
 
 Fonts (Space Grotesk, JetBrains Mono, SIL OFL) are bundled in `public/fonts`, so renders work offline.
-To add the Gemini/macOS narration from `flow_narrate`, drop the file in `public/` and add
-`<Audio src={staticFile("narration.m4a")} />` from `@remotion/media` inside `Promo`.
+## Audio
+
+`public/audio` holds three tracks that `Promo.tsx` plays together:
+
+- `voiceover.mp3`: seven English lines from Kokoro TTS (`audio-src/voiceover.py`, voice am_michael), placed
+  with ffmpeg `adelay` and normalised to -16 LUFS.
+- `music.mp3`: an original 120 bpm bed (Am-F-C-G) synthesized by `audio-src/synth.py`, ducked under the voice
+  with ffmpeg `sidechaincompress`.
+- `sfx.mp3`: whooshes, radar pings, buzz/chime at the gate, clicks, the Panic Close thunk, the end chime, all timed
+  to the animation (also `audio-src/synth.py`).
+
+Nothing is sampled or licensed from anyone else. The final mix measures -16.7 LUFS, peak -0.5 dBFS.
+To use a `flow_narrate` take instead, replace `voiceover.mp3` (and re-duck `music.mp3` against it).

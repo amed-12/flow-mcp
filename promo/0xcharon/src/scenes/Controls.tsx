@@ -132,8 +132,8 @@ export const Controls: React.FC = () => {
           position: "absolute",
           left: 140,
           top: 800,
-          opacity: interpolate(frame, [3.4 * fps, 3.4 * fps + 12], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
-          translate: interpolate(frame, [3.4 * fps, 3.4 * fps + 16], ["0px 40px", "0px 0px"], {
+          opacity: interpolate(frame, [2.8 * fps, 2.8 * fps + 12], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
+          translate: interpolate(frame, [2.8 * fps, 2.8 * fps + 16], ["0px 40px", "0px 0px"], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.bezier(0.16, 1, 0.3, 1),
