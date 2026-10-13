@@ -1,0 +1,81 @@
+{
+  "slug": "brewlog",
+  "engine": "remotion",
+  "output": "pipeline/runs/brewlog/out/brewlog.mp4",
+  "passed": true,
+  "rounds": 2,
+  "checks": [
+    {
+      "name": "duration",
+      "ok": true,
+      "detail": "15.02 s (target 15 s)"
+    },
+    {
+      "name": "resolution",
+      "ok": true,
+      "detail": "1080x1920 h264 (target 1080x1920)"
+    },
+    {
+      "name": "audio track",
+      "ok": true,
+      "detail": "aac"
+    },
+    {
+      "name": "loudness",
+      "ok": true,
+      "detail": "-16.5 LUFS (target -16 +-1.5)"
+    },
+    {
+      "name": "true peak",
+      "ok": true,
+      "detail": "-1.7 dBFS (below -0.3)"
+    },
+    {
+      "name": "voice timing",
+      "ok": true,
+      "detail": "last line ends at 14.591 s, inside the 15 s video"
+    },
+    {
+      "name": "scene hook",
+      "ok": true,
+      "detail": "EVERY CUP IS DIFFERENT pill and 'What worked?' present and spelled exactly; dripper, three mugs with steam and danger-coloured question marks (visible by 2.3 s); no overlap or cut-off."
+    },
+    {
+      "name": "scene log",
+      "ok": true,
+      "detail": "'Log a brew in 3 taps', BEANS, GRIND, RATIO, TIME all present and exact; rows fill in turn in the accent colour; card inside safe area."
+    },
+    {
+      "name": "scene rate",
+      "ok": true,
+      "detail": "'Rate it' and SAVED present; five stars fill in the warning colour with no number or score; nothing cut off."
+    },
+    {
+      "name": "scene best",
+      "ok": true,
+      "detail": "'Your best recipe' and BEST present and exact; the badge now sits on the winning card's top-right corner (right edge about x 940 at 11.5 s and 12.3 s, inside the frame); two other cards dimmed, shapes only, no figures."
+    },
+    {
+      "name": "scene end",
+      "ok": true,
+      "detail": "'Brew it again.' and 'brewlog.example' present and exact, thick-outline cards with hard shadows, steaming mug settles below."
+    },
+    {
+      "name": "style",
+      "ok": true,
+      "detail": "Cream #FFF8EE background with faint grid, ink outlines, accent orange, DM Serif Display headlines and IBM Plex Mono labels, flat illustration; matches the brief."
+    },
+    {
+      "name": "guardrail: no health claims",
+      "ok": true,
+      "detail": "No on-screen text or narration makes any health claim about coffee."
+    },
+    {
+      "name": "guardrail: no invented ratings, counts or awards",
+      "ok": true,
+      "detail": "Stars are unnumbered decorative shapes; recipe rows are shapes only; no figures, user counts or awards anywhere."
+    }
+  ],
+  "fixes": [],
+  "credits_spent": 0
+}

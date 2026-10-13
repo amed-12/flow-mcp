@@ -10,6 +10,8 @@ OmniFlow (lingoflow.pro/omniflow), using subscription credits instead of the API
 - `studio/index.html` Studio UI (single file, vanilla JS, mobile-first) · `src/chain.ts`, `src/assemble.ts` ffmpeg ·
   `src/techniques.ts` presets · `src/playbook.ts` guidance returned by `flow_status`
 - Test: `node scripts/e2e.mjs <project> '<scenes json>'` (spends credits unless scenes are images)
+- `pipeline/` turns a markdown brief into a video in four agent stages (scenario, prompt, generate, result), engine
+  `remotion` (free, code-drawn) or `flow` (this MCP, credits). Read `pipeline/README.md`; stages are `pipeline/stages/*.md`.
 
 ## Rules
 

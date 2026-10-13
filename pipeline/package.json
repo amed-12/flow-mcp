@@ -1,0 +1,27 @@
+{
+  "name": "flow-mcp-video-pipeline",
+  "private": true,
+  "type": "module",
+  "description": "Scenario -> prompt -> generate -> result. Shared dependencies for every run under pipeline/runs.",
+  "scripts": {
+    "make": "node run.mjs make",
+    "build": "node run.mjs build",
+    "review": "node run.mjs review",
+    "check": "node run.mjs check",
+    "setup": "node run.mjs setup"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.535",
+    "@remotion/fonts": "4.0.535",
+    "@remotion/media": "4.0.535",
+    "@remotion/transitions": "4.0.535",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.535",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "typescript": "5.9.3"
+  }
+}

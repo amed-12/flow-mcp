@@ -1,0 +1,76 @@
+{
+  "slug": "brewlog",
+  "title": "Brewlog - Brew it again",
+  "engine": "remotion",
+  "aspect": "9:16",
+  "fps": 30,
+  "duration_s": 15,
+  "language": "en",
+  "voice": { "engine": "kokoro", "voice": "af_heart" },
+  "style": {
+    "background": "#FFF8EE",
+    "ink": "#2B1A12",
+    "accent": "#E8833A",
+    "warn": "#F2C14E",
+    "danger": "#C8553D",
+    "font_display": "DM Serif Display",
+    "font_mono": "IBM Plex Mono",
+    "notes": "Warm, cosy, flat illustration, rounded cards with thick outlines and hard shadows, faint grid."
+  },
+  "guardrails": [
+    "No health claims about coffee.",
+    "No ratings, user counts or awards that the brief does not give."
+  ],
+  "scenes": [
+    {
+      "id": "hook",
+      "duration_s": 3,
+      "goal": "Every cup is a little different and you forget what worked.",
+      "visual": "Flat-vector pour-over dripper over a mug on a cream, faintly gridded background. Three mugs in a row with slightly different steam swirls and a small danger-coloured question mark above each. The kicker pill sits top, the headline below in big serif.",
+      "on_screen_text": ["EVERY CUP IS DIFFERENT", "What worked?"],
+      "narration": "Every cup is different. What worked?",
+      "sound": ["soft warm whoosh as the mugs slide in", "gentle drip tick as the question marks pop"],
+      "transition_in": "none"
+    },
+    {
+      "id": "log",
+      "duration_s": 3.5,
+      "goal": "Brewlog logs a brew in three taps.",
+      "visual": "A rounded phone-sized card with a thick outline and hard shadow rises in. Three chunky tap targets light up in turn in the accent colour: beans, grind, ratio and time as mono-labelled rows filling in one by one, with a finger dot tapping each.",
+      "on_screen_text": ["Log a brew in 3 taps", "BEANS", "GRIND", "RATIO", "TIME"],
+      "narration": "Brewlog logs a brew in three taps.",
+      "sound": ["soft pop on each tap", "rising tick as rows fill in"],
+      "transition_in": "slide-left"
+    },
+    {
+      "id": "rate",
+      "duration_s": 2.5,
+      "goal": "You rate each brew.",
+      "visual": "The log card flips to a rating row: five outlined stars fill left to right in the warning colour as a stamp-style saved pill lands beside them. The stars are decorative shapes with no number or score.",
+      "on_screen_text": ["Rate it", "SAVED"],
+      "narration": "Then rate how it tasted.",
+      "sound": ["bright chime per star", "stamp thunk when SAVED lands"],
+      "transition_in": "wipe-left"
+    },
+    {
+      "id": "best",
+      "duration_s": 3.5,
+      "goal": "Brewlog shows which recipe you liked best.",
+      "visual": "Three recipe cards stack as a list; two slide down and dim while one slides to the top, grows, and gains an accent-coloured BEST badge with a small coffee-cup icon. Recipe rows are shapes only, no figures.",
+      "on_screen_text": ["Your best recipe", "BEST"],
+      "narration": "And it shows your best recipe.",
+      "sound": ["whoosh as cards reorder", "warm two-note chime when BEST badge lands"],
+      "transition_in": "slide-up"
+    },
+    {
+      "id": "end",
+      "duration_s": 2.5,
+      "goal": "Brew it again: go to brewlog.example.",
+      "visual": "Plain cream end card with the faint grid. The headline in big serif and an accent-coloured pill with the link, both on thick-outlined cards with hard shadows, and a steaming mug icon that settles beneath.",
+      "on_screen_text": ["Brew it again.", "brewlog.example"],
+      "narration": "Brew it again. Brewlog dot example.",
+      "sound": ["music resolves to one held chord", "soft steam hiss"],
+      "transition_in": "fade"
+    }
+  ]
+}

@@ -15,3 +15,11 @@ The essentials:
 - To test new code beside a running copy, use a scratch `FLOW_MCP_HOME` and another `FLOW_MCP_PORT`; reusing the real
   home overwrites the token the running copy depends on.
 - Record what you learn about Flow in CLAUDE.md, dated, in the style of the notes already there.
+
+## Video pipeline
+
+`pipeline/` turns a markdown brief into a video in four stages (scenario, prompt, generate, result), each meant for
+a separate agent run. Start with [pipeline/README.md](pipeline/README.md); the stage instructions are
+`pipeline/stages/*.md` and the hand-off files are validated by `node pipeline/schema.mjs <run>`.
+`node pipeline/run.mjs make <brief.md> --agent codex` runs it with Codex (`gemini`, `hermes`, `claude` also work).
+Stop for the user's approval after the scenario and before any Flow credits are spent.

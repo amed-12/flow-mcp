@@ -1,0 +1,229 @@
+{
+  "slug": "0xcharon",
+  "engine": "remotion",
+  "remotion": {
+    "scenes": [
+      {
+        "id": "intro",
+        "component": "Intro",
+        "spec": "See video/src/scenes/Intro.tsx: candlestick river (34 candles, sine bob), boat slides in from the left over 3 s, kicker at 0.27 s, title 'Meet 0xcharon' 190 px at 0.53 s with 0x in mono, subtitle 54 px mono at 1.1 s."
+      },
+      {
+        "id": "scanner",
+        "component": "Scanner",
+        "spec": "See video/src/scenes/Scanner.tsx: headline 96 px, live pill at top 320, three row cards 960x150 from 0.8 s every 0.4 s, score bars fill over 1.3 s, radar 640 px at right sweeping 4 deg per frame."
+      },
+      {
+        "id": "gate",
+        "component": "Gate",
+        "spec": "See video/src/scenes/Gate.tsx: belt at y 560, gate at x 960, four cards 22 frames apart, third accepted; reason cards at 1.6 s (passed, left) and 3 s (entered, right)."
+      },
+      {
+        "id": "console",
+        "component": "Console",
+        "spec": "See video/src/scenes/Console.tsx: headline 92 px, pills at 0.27 s, chart 1000x390 drawing 0.4-2.5 s, ring gauge 600x390 filling to 3 s, four stat cards popping from 1.33 s."
+      },
+      {
+        "id": "controls",
+        "component": "Controls",
+        "spec": "See video/src/scenes/Controls.tsx: toggle card 780x400 flips at 1.3 s, Panic Close card 740x400 pressed at 2.6 s with an expanding ring, paper line at 2.8 s."
+      },
+      {
+        "id": "end-card",
+        "component": "EndCard",
+        "spec": "See video/src/scenes/EndCard.tsx: centred logo tile 200 px springs in, wordmark 170 px at 0.27 s, tagline 52 px at 0.6 s, URL pill at 0.87 s, disclaimer 28 px mono at 1.13 s."
+      }
+    ],
+    "voice": "am_michael",
+    "voiceover": [
+      {
+        "at_s": 0.4,
+        "text": "Meet Zero X Charon. The Charon Trenches Agent.",
+        "speed": 1.08
+      },
+      {
+        "at_s": 4.3,
+        "text": "It scans new Solana tokens around the clock, and scores every one.",
+        "speed": 1.08
+      },
+      {
+        "at_s": 9.9,
+        "text": "Then it tells you exactly why it entered, or passed.",
+        "speed": 1.08
+      },
+      {
+        "at_s": 14.3,
+        "text": "Track P.N.L., win rate and open trades, on one console.",
+        "speed": 1.08
+      },
+      {
+        "at_s": 19.2,
+        "text": "Pause new entries in one tap, or hit Panic Close.",
+        "speed": 1.08
+      },
+      {
+        "at_s": 22.4,
+        "text": "Start in paper mode, without risking a single SOL.",
+        "speed": 1.18
+      },
+      {
+        "at_s": 25.8,
+        "text": "Autonomous degen trading, executed with precision.",
+        "speed": 1.08
+      }
+    ],
+    "music": {
+      "bpm": 120,
+      "chords": [
+        [
+          57,
+          60,
+          64
+        ],
+        [
+          53,
+          57,
+          60
+        ],
+        [
+          48,
+          52,
+          55
+        ],
+        [
+          55,
+          59,
+          62
+        ]
+      ],
+      "bass": [
+        45,
+        41,
+        36,
+        43
+      ],
+      "drums_from_s": 4,
+      "end_s": 25,
+      "gain": 0.5
+    },
+    "sfx": [
+      {
+        "at_s": 0.0,
+        "kind": "whoosh",
+        "length_s": 1.6,
+        "gain": 0.18
+      },
+      {
+        "at_s": 3.9,
+        "kind": "whoosh"
+      },
+      {
+        "at_s": 9.4,
+        "kind": "whoosh"
+      },
+      {
+        "at_s": 13.9,
+        "kind": "whoosh"
+      },
+      {
+        "at_s": 19.9,
+        "kind": "whoosh"
+      },
+      {
+        "at_s": 24.9,
+        "kind": "whoosh"
+      },
+      {
+        "at_s": 4.3,
+        "kind": "ping"
+      },
+      {
+        "at_s": 7.3,
+        "kind": "ping"
+      },
+      {
+        "at_s": 4.8,
+        "kind": "pop",
+        "pitch": 81
+      },
+      {
+        "at_s": 5.2,
+        "kind": "pop",
+        "pitch": 85
+      },
+      {
+        "at_s": 5.6,
+        "kind": "pop",
+        "pitch": 88
+      },
+      {
+        "at_s": 11.03,
+        "kind": "buzz"
+      },
+      {
+        "at_s": 11.77,
+        "kind": "buzz"
+      },
+      {
+        "at_s": 13.23,
+        "kind": "buzz"
+      },
+      {
+        "at_s": 12.5,
+        "kind": "chime",
+        "pitch": 84,
+        "gain": 0.14
+      },
+      {
+        "at_s": 14.4,
+        "kind": "shimmer",
+        "length_s": 2.0
+      },
+      {
+        "at_s": 15.33,
+        "kind": "click",
+        "gain": 0.25
+      },
+      {
+        "at_s": 15.6,
+        "kind": "click",
+        "gain": 0.25
+      },
+      {
+        "at_s": 15.87,
+        "kind": "click",
+        "gain": 0.25
+      },
+      {
+        "at_s": 16.13,
+        "kind": "click",
+        "gain": 0.25
+      },
+      {
+        "at_s": 21.3,
+        "kind": "click",
+        "gain": 0.4
+      },
+      {
+        "at_s": 22.6,
+        "kind": "thunk"
+      },
+      {
+        "at_s": 22.8,
+        "kind": "pop",
+        "pitch": 76
+      },
+      {
+        "at_s": 25.0,
+        "kind": "pop",
+        "pitch": 79
+      },
+      {
+        "at_s": 25.3,
+        "kind": "chime",
+        "pitch": 72,
+        "gain": 0.18
+      }
+    ]
+  }
+}
